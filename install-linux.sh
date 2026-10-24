@@ -65,6 +65,11 @@ fi
 
 install_config
 run install -D -m 0755 "$REPO_ROOT/scripts/opencode-local" "$OCL_BIN/opencode-local"
+# Lets the launcher start llama-server itself. Not inside Termux's Debian: there the model
+# server runs in Termux and the Termux launcher takes care of it.
+if [[ "$no_llama" == 0 ]]; then
+  run bash -c "printf '%s\n' '$REPO_ROOT' > '$OCL_HOME/repo-path'"
+fi
 
 case ":$PATH:" in
   *":$OCL_BIN:"*) ;;
@@ -76,7 +81,6 @@ cat >&2 <<EOF
 Done. Next steps:
   1. scripts/fetch-model.sh --list
   2. scripts/fetch-model.sh qwen2.5-coder-1.5b
-  3. scripts/start-llama.sh --background
-  4. cd into a project and run: opencode-local
+  3. cd into a project and run: opencode-local   (starts the model if needed)
 After step 2 you can cut the network (see docs/security.md).
 EOF

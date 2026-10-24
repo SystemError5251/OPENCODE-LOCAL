@@ -79,13 +79,7 @@ set -euo pipefail
 case "\$PWD" in "\$HOME"|/|/sdcard|/storage/emulated/0)
   echo "[ocl] refusing to start in \$PWD - cd into a project directory first" >&2; exit 1 ;;
 esac
-if ! curl --silent --max-time 2 "http://127.0.0.1:\${OCL_LLAMA_PORT:-8080}/health" >/dev/null 2>&1; then
-  "$REPO_ROOT/scripts/start-llama.sh" --background
-  for _ in \$(seq 1 60); do
-    curl --silent --max-time 1 "http://127.0.0.1:\${OCL_LLAMA_PORT:-8080}/health" >/dev/null 2>&1 && break
-    sleep 1
-  done
-fi
+"$REPO_ROOT/scripts/ensure-llama.sh"
 termux-wake-lock 2>/dev/null || true
 exec proot-distro login $DISTRO --bind "\$PWD:/work" -- bash -c 'cd /work && exec /root/.local/bin/opencode-local "\$@"' opencode-local "\$@"
 EOF

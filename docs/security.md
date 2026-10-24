@@ -64,6 +64,12 @@ unshare -rn opencode-local   # new network namespace with loopback only
 Note: llama-server must then run in the same namespace, or use the system firewall instead.
 
 ### Model host in the home network (Phase 7)
+**Recommended: SSH tunnel** (`scripts/tunnel.sh user@pc`). The PC's llama-server stays on its own
+`127.0.0.1`, so nothing is exposed to the network. Traffic is encrypted and authenticated by SSH, and
+OpenCode's config does not change. Use SSH keys (`ssh-keygen`, `ssh-copy-id`) and disable password login
+on the PC. On Android the firewall app must allow Termux to reach the LAN, but not the internet.
+
+**Alternative without SSH** (plain HTTP on the LAN, only with key + firewall):
 1. Generate a key: `openssl rand -hex 24`, export it as `OCL_LLAMA_API_KEY` on host and client.
 2. Start on the host: `scripts/start-llama.sh --host 192.168.1.10`.
 3. Allow only the client, e.g. with ufw:
@@ -72,8 +78,15 @@ Note: llama-server must then run in the same namespace, or use the system firewa
    sudo ufw deny 8080/tcp
    ```
 4. On the client change `baseURL` in `~/.config/opencode/opencode.json` to `http://192.168.1.10:8080/v1`.
-Simpler and encrypted alternative: keep the host on `127.0.0.1` and use an SSH tunnel:
-`ssh -N -L 8080:127.0.0.1:8080 user@192.168.1.10`.
+
+### Windows notes
+- WSL2 mode is the same pinned, source-built setup as Linux.
+- Native mode:
+  - The OpenCode release zip is checked against a SHA-256 pinned in `install-windows.ps1`.
+  - llama.cpp comes from winget (`ggml.llamacpp`); winget checks its own manifest hash, but the
+    version is not pinned.
+  - File modes like 0600 for the crypto key do not apply on Windows. Keep the key in your user profile
+    and back it up.
 
 ## Logs
 | What | Where |

@@ -12,9 +12,14 @@ if [[ "$PWD" == "$HOME" || "$PWD" == / ]]; then
   exit 1
 fi
 
+repo_file="$OCL_HOME/repo-path"
+if [[ -f "$repo_file" && -x "$(cat "$repo_file")/scripts/ensure-llama.sh" ]]; then
+  "$(cat "$repo_file")/scripts/ensure-llama.sh" || exit 1
+fi
+
 port="${OCL_LLAMA_PORT:-8080}"
-if ! curl --silent --max-time 2 "http://127.0.0.1:$port/health" >/dev/null 2>&1; then
-  echo "[ocl] warning: llama-server is not answering on 127.0.0.1:$port (start it with scripts/start-llama.sh)" >&2
+if ! curl --silent --fail --max-time 2 "http://127.0.0.1:$port/health" >/dev/null 2>&1; then
+  echo "[ocl] warning: no ready model server on 127.0.0.1:$port (start it with scripts/ensure-llama.sh)" >&2
 fi
 
 mkdir -p "${OCL_STATE:-$HOME/.local/state/opencode-local}"
