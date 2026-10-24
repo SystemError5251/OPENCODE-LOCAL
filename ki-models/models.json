@@ -1,0 +1,60 @@
+{
+  "_comment": "Curated GGUF models per device tier. sha256 may be left empty: scripts/fetch-model.sh then reads the official hash from the Hugging Face API, prints it, and you should pin it here.",
+  "models": [
+    {
+      "id": "qwen2.5-coder-0.5b",
+      "tier": "test",
+      "repo": "Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF",
+      "file": "qwen2.5-coder-0.5b-instruct-q4_k_m.gguf",
+      "revision": "main",
+      "size_gb": 0.4,
+      "ctx": 8192,
+      "sha256": "",
+      "notes": "Smoke test only. Too weak for real coding."
+    },
+    {
+      "id": "qwen2.5-coder-1.5b",
+      "tier": "phone-8gb",
+      "repo": "Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF",
+      "file": "qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
+      "revision": "main",
+      "size_gb": 1.1,
+      "ctx": 8192,
+      "sha256": "",
+      "notes": "Default for phones with 6-8 GB RAM."
+    },
+    {
+      "id": "qwen2.5-coder-3b",
+      "tier": "phone-8gb",
+      "repo": "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF",
+      "file": "qwen2.5-coder-3b-instruct-q4_k_m.gguf",
+      "revision": "main",
+      "size_gb": 2.1,
+      "ctx": 4096,
+      "sha256": "",
+      "notes": "Upper limit for 8 GB phones. Keep the context short."
+    },
+    {
+      "id": "qwen2.5-coder-7b",
+      "tier": "phone-12gb",
+      "repo": "bartowski/Qwen2.5-Coder-7B-Instruct-GGUF",
+      "file": "Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf",
+      "revision": "main",
+      "size_gb": 4.7,
+      "ctx": 8192,
+      "sha256": "",
+      "notes": "Phones with 12+ GB RAM (slow) or PCs with 16 GB. Community quantization of the official weights."
+    },
+    {
+      "id": "qwen2.5-coder-14b",
+      "tier": "pc",
+      "repo": "bartowski/Qwen2.5-Coder-14B-Instruct-GGUF",
+      "file": "Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "revision": "main",
+      "size_gb": 9.0,
+      "ctx": 16384,
+      "sha256": "",
+      "notes": "PC with 32 GB RAM or a GPU. Community quantization of the official weights."
+    }
+  ]
+}

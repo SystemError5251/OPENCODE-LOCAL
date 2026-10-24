@@ -1,0 +1,7 @@
+# Models are large and downloaded per device
+*.gguf
+*.gguf.part
+*.gguf.sha256
+# Build output and logs
+build/
+*.log
