@@ -1,0 +1,87 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "llamacpp/local",
+  "small_model": "llamacpp/local",
+  "default_agent": "coder",
+  "enabled_providers": ["llamacpp"],
+  "provider": {
+    "llamacpp": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "llama-server (local)",
+      "options": {
+        "baseURL": "http://127.0.0.1:8080/v1",
+        "apiKey": "{env:OCL_LLAMA_API_KEY}"
+      },
+      "models": {
+        "local": {
+          "name": "Local GGUF model (llama-server)",
+          "tool_call": true,
+          "limit": {
+            "context": 8192,
+            "output": 2048
+          }
+        }
+      }
+    }
+  },
+  "autoupdate": false,
+  "share": "disabled",
+  "lsp": false,
+  "formatter": false,
+  "experimental": {
+    "openTelemetry": false
+  },
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow",
+      "*id_rsa*": "deny",
+      "*id_ed25519*": "deny",
+      "*.pem": "deny",
+      "*.key": "deny"
+    },
+    "glob": "allow",
+    "grep": "allow",
+    "edit": "ask",
+    "bash": {
+      "*": "ask",
+      "ls *": "allow",
+      "pwd": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "rm -rf *": "deny",
+      "rm -fr *": "deny",
+      "rm -r *": "deny",
+      "sudo *": "deny",
+      "su *": "deny",
+      "doas *": "deny",
+      "chmod -R *": "deny",
+      "chown *": "deny",
+      "dd *": "deny",
+      "mkfs*": "deny",
+      "curl *": "deny",
+      "wget *": "deny",
+      "nc *": "deny",
+      "ncat *": "deny",
+      "ssh *": "deny",
+      "scp *": "deny",
+      "rsync *": "deny",
+      "git push*": "deny",
+      "git remote*": "deny",
+      "pip install*": "deny",
+      "npm install*": "deny",
+      "npx *": "deny",
+      "bunx *": "deny",
+      "eval *": "deny"
+    },
+    "webfetch": "deny",
+    "websearch": "deny",
+    "external_directory": "deny",
+    "task": "allow",
+    "skill": "ask",
+    "doom_loop": "deny"
+  }
+}

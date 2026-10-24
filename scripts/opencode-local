@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Launcher: load the offline environment and start OpenCode in the current directory.
+set -euo pipefail
+
+OCL_HOME="${OCL_HOME:-$HOME/.local/share/opencode-local}"
+OCL_BIN="${OCL_BIN:-$HOME/.local/bin}"
+# shellcheck source=SCRIPTDIR/../ki-config/env.sh
+source "$OCL_HOME/env.sh"
+
+if [[ "$PWD" == "$HOME" || "$PWD" == / ]]; then
+  echo "[ocl] refusing to start in $PWD - cd into a project directory first" >&2
+  exit 1
+fi
+
+port="${OCL_LLAMA_PORT:-8080}"
+if ! curl --silent --max-time 2 "http://127.0.0.1:$port/health" >/dev/null 2>&1; then
+  echo "[ocl] warning: llama-server is not answering on 127.0.0.1:$port (start it with scripts/start-llama.sh)" >&2
+fi
+
+mkdir -p "${OCL_STATE:-$HOME/.local/state/opencode-local}"
+echo "$(date -Iseconds) start $PWD" >> "${OCL_STATE:-$HOME/.local/state/opencode-local}/sessions.log"
+exec "$OCL_BIN/opencode" "$@"
