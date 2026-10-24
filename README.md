@@ -32,7 +32,7 @@ scripts/phase0-check.sh            # device data + Phase 0 checklist
 ./install-termux.sh
 scripts/fetch-model.sh qwen2.5-coder-1.5b
 scripts/bench.sh                   # tokens/s
-cd ~/projects/myproject && opencode-local
+mkdir -p ~/projects/myproject && cd ~/projects/myproject && opencode-local
 ```
 `opencode-local` starts llama-server in the background if needed. Stop it with `scripts/start-llama.sh --stop`.
 
@@ -44,7 +44,7 @@ scripts/phase0-check.sh
 ./install-linux.sh
 scripts/fetch-model.sh qwen2.5-coder-1.5b
 scripts/start-llama.sh --background
-cd ~/projects/myproject && opencode-local
+mkdir -p ~/projects/myproject && cd ~/projects/myproject && opencode-local
 ```
 
 Then cut the network for Termux / the machine – see [docs/security.md](docs/security.md#network-lock-down).

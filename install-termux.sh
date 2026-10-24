@@ -94,7 +94,7 @@ cat >&2 <<EOF
 Done. Next steps (in Termux):
   1. scripts/fetch-model.sh qwen2.5-coder-1.5b
   2. scripts/bench.sh                       # Phase 1: tokens/s
-  3. cd ~/projects/myproject && opencode-local
+  3. mkdir -p ~/projects/myproject && cd ~/projects/myproject && opencode-local
   4. Stop the model when done: scripts/start-llama.sh --stop ; termux-wake-unlock
 Then block Termux's network access in your firewall app (docs/security.md).
 EOF
