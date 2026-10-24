@@ -82,6 +82,41 @@
     "external_directory": "deny",
     "task": "allow",
     "skill": "ask",
-    "doom_loop": "deny"
+    "doom_loop": "deny",
+    "ocl_*": "ask",
+    "ocl_files_info": "allow",
+    "ocl_files_largest": "allow",
+    "ocl_files_list_trash": "allow",
+    "ocl_backup_list": "allow",
+    "ocl_backup_diff": "allow",
+    "ocl_backup_create": "allow",
+    "ocl_crypto_status": "allow",
+    "ocl_video_info": "allow"
+  },
+  "mcp": {
+    "ocl_files": {
+      "type": "local",
+      "command": ["python3", "-I", "{env:HOME}/.local/share/opencode-local/tools/files_server.py"],
+      "cwd": ".",
+      "timeout": 60000
+    },
+    "ocl_backup": {
+      "type": "local",
+      "command": ["python3", "-I", "{env:HOME}/.local/share/opencode-local/tools/backup_server.py"],
+      "cwd": ".",
+      "timeout": 600000
+    },
+    "ocl_crypto": {
+      "type": "local",
+      "command": ["python3", "-I", "{env:HOME}/.local/share/opencode-local/tools/crypto_server.py"],
+      "cwd": ".",
+      "timeout": 600000
+    },
+    "ocl_video": {
+      "type": "local",
+      "command": ["python3", "-I", "{env:HOME}/.local/share/opencode-local/tools/video_server.py"],
+      "cwd": ".",
+      "timeout": 21600000
+    }
   }
 }

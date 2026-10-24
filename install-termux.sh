@@ -17,16 +17,18 @@ Usage: $(basename "$0") [options]
       --skip-deps    do not run pkg install
       --no-llama     skip the native llama.cpp build
       --no-opencode  skip Debian, Bun and OpenCode (llama.cpp only)
+      --update       after git pull: refresh config, MCP tools and launcher only (no rebuilds)
 EOF
 }
 
-skip_deps=0 no_llama=0 no_opencode=0
+skip_deps=0 no_llama=0 no_opencode=0 update=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -n|--dry-run) DRY_RUN=1; shift ;;
     --skip-deps) skip_deps=1; shift ;;
     --no-llama) no_llama=1; shift ;;
     --no-opencode) no_opencode=1; shift ;;
+    --update) update=1 skip_deps=1 no_llama=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
@@ -54,8 +56,9 @@ if [[ "$no_opencode" == 0 ]]; then
     run proot-distro install "$DISTRO"
   fi
   guest=(proot-distro login "$DISTRO" --bind "$REPO_ROOT:$GUEST_REPO" --)
-  run "${guest[@]}" bash -c "apt-get update && apt-get install -y --no-install-recommends git curl unzip jq ca-certificates"
+  run "${guest[@]}" bash -c "apt-get update && apt-get install -y --no-install-recommends git curl unzip jq ca-certificates python3 gnupg ffmpeg"
   guest_args=(--skip-deps --no-llama)
+  [[ "$update" == 1 ]] && guest_args+=(--config-only)
   [[ "$DRY_RUN" == 1 ]] && guest_args+=(--dry-run)
   run "${guest[@]}" bash "$GUEST_REPO/install-linux.sh" "${guest_args[@]}"
 fi

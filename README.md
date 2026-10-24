@@ -1,8 +1,8 @@
 # OPENCODE-LOCAL
 Fully local, offline AI coding assistant built on OpenCode and llama.cpp. Runs on Termux (Android), Linux and Windows. No cloud, no API keys, no telemetry. Hardened permissions, local MCP tools and multilingual setup for maximum privacy.
 
-> Status: Phases 0–3 (feasibility, local model, OpenCode wiring, hardening). MCP tools and the
-> Windows installer are still open – see [docs/project-plan.md](docs/project-plan.md).
+> Status: Phases 0–4 (feasibility, local model, OpenCode wiring, hardening, local MCP tools).
+> The Windows installer is still open – see [docs/project-plan.md](docs/project-plan.md).
 
 ## How it works
 
@@ -47,6 +47,12 @@ scripts/start-llama.sh --background
 mkdir -p ~/projects/myproject && cd ~/projects/myproject && opencode-local
 ```
 
+### Updating after `git pull`
+```bash
+./install-termux.sh --update      # Termux: config, MCP tools, launcher - no rebuilds
+./install-linux.sh --config-only  # Linux
+```
+
 Then cut the network for Termux / the machine – see [docs/security.md](docs/security.md#network-lock-down).
 
 ## Repository layout
@@ -55,7 +61,7 @@ Then cut the network for Termux / the machine – see [docs/security.md](docs/se
 |---|---|
 | `ki-config/` | hardened `opencode.json`, global `AGENTS.md`, agent prompts (`coder`, `review`), `env.sh` |
 | `ki-models/` | curated model list with checksums, [how to choose](ki-models/README.md) |
-| `ki-tools/` | local MCP servers (Phase 4, placeholder) |
+| `ki-tools/` | local MCP servers: files (trash/restore), backup, crypto (gpg), video (ffmpeg) – [details](ki-tools/README.md) |
 | `scripts/` | `phase0-check.sh`, `fetch-model.sh`, `start-llama.sh`, `bench.sh`, `opencode-local` launcher |
 | `lib/common.sh` | version pins and shared helpers |
 | `docs/` | [project plan](docs/project-plan.md), [security](docs/security.md), [Phase 0 results](docs/phase0-results.md) |
@@ -66,6 +72,7 @@ Then cut the network for Termux / the machine – see [docs/security.md](docs/se
 - Reading is free (except `.env`, keys, `*.pem`); every edit and every shell command asks first.
 - `rm -r`, `sudo`, `curl`, `wget`, `ssh`, `git push`, package installers, web fetch/search are denied.
 - Access outside the project directory is denied.
+- Local MCP tools never delete or overwrite; every `ocl_*` tool that changes something asks first.
 - llama-server listens on `127.0.0.1` only; other addresses require a long API key.
 - All downloads are HTTPS, pinned and checksum-verified; nothing is piped into a shell.
 

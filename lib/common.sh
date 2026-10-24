@@ -157,5 +157,10 @@ install_config() {
   done
   run mkdir -p "$OCL_HOME"
   run install -m 0644 "$REPO_ROOT/ki-config/env.sh" "$OCL_HOME/env.sh"
-  log "config installed to $dst"
+  # Local MCP servers (Phase 4), referenced from opencode.json.
+  run mkdir -p "$OCL_HOME/tools"
+  for f in "$REPO_ROOT"/ki-tools/*.py; do
+    run install -m 0644 "$f" "$OCL_HOME/tools/$(basename "$f")"
+  done
+  log "config and MCP tools installed to $dst and $OCL_HOME/tools"
 }

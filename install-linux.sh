@@ -16,7 +16,7 @@ Needs internet once; afterwards everything runs offline.
       --skip-deps    do not install system packages
       --no-llama     skip llama.cpp (used by install-termux.sh, which builds it natively)
       --no-opencode  skip Bun and OpenCode
-      --config-only  only (re)install ki-config/ to $OPENCODE_CONFIG_DIR_TARGET
+      --config-only  only (re)install ki-config/ and ki-tools/ (use after git pull)
 EOF
 }
 
@@ -42,13 +42,13 @@ install_deps() {
   if have apt-get; then
     run "${sudo_cmd[@]}" apt-get update
     run "${sudo_cmd[@]}" apt-get install -y --no-install-recommends \
-      git cmake build-essential curl unzip jq ca-certificates
+      git cmake build-essential curl unzip jq ca-certificates python3 gnupg ffmpeg
   elif have dnf; then
-    run "${sudo_cmd[@]}" dnf install -y git cmake gcc-c++ make curl unzip jq
+    run "${sudo_cmd[@]}" dnf install -y git cmake gcc-c++ make curl unzip jq python3 gnupg2 ffmpeg-free
   elif have pacman; then
-    run "${sudo_cmd[@]}" pacman -S --needed --noconfirm git cmake base-devel curl unzip jq
+    run "${sudo_cmd[@]}" pacman -S --needed --noconfirm git cmake base-devel curl unzip jq python gnupg ffmpeg
   else
-    die "no supported package manager (apt, dnf, pacman); install git cmake g++ make curl unzip jq yourself and use --skip-deps"
+    die "no supported package manager (apt, dnf, pacman); install git cmake g++ make curl unzip jq python3 gnupg ffmpeg yourself and use --skip-deps"
   fi
 }
 

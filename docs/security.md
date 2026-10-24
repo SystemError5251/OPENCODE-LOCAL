@@ -11,6 +11,8 @@
 | Agent leaves the project | `external_directory: deny`; on Termux only the current project is bind-mounted into Debian |
 | Model server reachable from the network | `llama-server` binds to `127.0.0.1`; other addresses are refused without a 24+ character API key |
 | Tampered downloads | Pinned versions (`lib/common.sh`), HTTPS only, Bun checked against `SHASUMS256.txt`, models checked against SHA-256, never `curl \| sh` |
+| MCP tool does damage | Tools never delete or overwrite, paths are sandboxed to the project, every changing `ocl_*` tool asks first (see [ki-tools/README.md](../ki-tools/README.md)) |
+| Encryption key leaks to the model | Passphrase lives outside the project (0600) and is passed to gpg as a file, never in tool input/output |
 | Silent updates change behaviour | `autoupdate: false` + `OPENCODE_DISABLE_AUTOUPDATE=1`; updates only by changing the pins |
 
 ## What each setting does
@@ -26,6 +28,8 @@
   - `webfetch`, `websearch`: deny
   - `doom_loop`: deny (stops a model that repeats the same tool call)
   - `skill`: ask, `task` (subagents): allow – subagents inherit the same permission rules
+  - `ocl_*`: ask – our MCP tools. Without this rule they would run unasked, because OpenCode allows
+    unknown permissions by default. Read-only tools and `ocl_backup_create` are allowed after it.
 
 ### `ki-config/env.sh`
 Sourced by the `opencode-local` launcher:
@@ -78,5 +82,6 @@ Simpler and encrypted alternative: keep the host on `127.0.0.1` and use an SSH t
 | OpenCode session starts (directory, time) | `~/.local/state/opencode-local/sessions.log` |
 | OpenCode's own logs, incl. every tool call | `~/.local/share/opencode/log/` |
 | Benchmarks / Phase 0 reports | `~/.local/state/opencode-local/` |
+| Backups, crypto key | `~/.local/share/opencode-local/backups/`, `.../keys/crypto.pass` – **back up the key** |
 
 On Termux the OpenCode paths are inside Debian: `proot-distro login debian -- ls /root/.local/share/opencode/log`.
