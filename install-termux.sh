@@ -50,7 +50,8 @@ fi
 
 # 3. Debian proot with Bun + OpenCode
 if [[ "$no_opencode" == 0 ]]; then
-  if [[ -d "${PREFIX:-}/var/lib/proot-distro/installed-rootfs/$DISTRO" ]]; then
+  # Ask proot-distro itself: the rootfs location differs between proot-distro versions.
+  if proot-distro login "$DISTRO" -- true >/dev/null 2>&1; then
     log "proot-distro $DISTRO already installed"
   else
     run proot-distro install "$DISTRO"
