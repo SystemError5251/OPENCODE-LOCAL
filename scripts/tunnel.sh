@@ -65,14 +65,14 @@ cmd=(ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAlive
 log "${cmd[*]}"
 [[ "$DRY_RUN" == 1 ]] && exit 0
 
-"${cmd[@]}" >> "$OCL_STATE/tunnel.log" 2>&1 &
+"${cmd[@]}" >> "$(debug_log tunnel.log)" 2>&1 &
 echo $! > "$pidfile"
 for _ in $(seq 1 15); do
   if curl --silent --fail --max-time 2 "http://127.0.0.1:$port/health" >/dev/null 2>&1; then
     log "tunnel up: OpenCode now uses the model on $target"
     exit 0
   fi
-  running || die "ssh exited - see $OCL_STATE/tunnel.log (first connection? run 'ssh $target' once to accept the host key)"
+  running || die "ssh exited (first connection? run 'ssh $target' once to accept the host key; OCL_DEBUG_LOG=1 keeps its output)"
   sleep 1
 done
 warn "tunnel is running but the PC's llama-server does not answer yet (is it started there?)"

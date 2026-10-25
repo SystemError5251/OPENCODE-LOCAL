@@ -22,6 +22,10 @@ OPENCODE_CONFIG_DIR_TARGET="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
 
 DRY_RUN="${DRY_RUN:-0}"
 
+# No logs by default: server and tunnel output is discarded. OCL_DEBUG_LOG=1 writes it to $OCL_STATE
+# for troubleshooting; delete those files afterwards (scripts/wipe-sessions.sh).
+debug_log() { if [[ "${OCL_DEBUG_LOG:-0}" == 1 ]]; then echo "$OCL_STATE/$1"; else echo /dev/null; fi; }
+
 # --- Logging -----------------------------------------------------------------
 log()  { printf '\033[1;34m[ocl]\033[0m %s\n' "$*" >&2; }
 warn() { printf '\033[1;33m[ocl] warning:\033[0m %s\n' "$*" >&2; }

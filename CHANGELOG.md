@@ -1,6 +1,27 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 – 2026-10-25
+
+### Added
+- `quickstart.sh`: one command from a fresh clone to a working setup on Termux and Linux (installs, picks a
+  model by RAM, downloads it, prints the next step). Safe to run again to repair an interrupted install.
+- No session traces: `opencode-local` keeps OpenCode's sessions, logs, snapshots, cache and temp files in a
+  private per-run folder (in RAM where possible) and deletes it on exit; leftovers of killed runs are removed
+  at the next start. llama-server and tunnel output are discarded unless `OCL_DEBUG_LOG=1`.
+- `scripts/wipe-sessions.sh`: one-time removal of session data and logs from older versions.
+
+### Changed
+- The official OpenCode release binary is now the default; `--from-source` builds it with Bun.
+  `--prebuilt-opencode` is still accepted.
+- `fetch-model.sh` makes the downloaded model the default for `start-llama.sh` and `bench.sh`.
+- llama-server starts with `--reasoning off`: Qwen3 no longer "thinks" before each answer (a short test
+  question took 0.6 s instead of 20 s). `OCL_LLAMA_REASONING=auto` turns it back on.
+- README quick start rewritten (clone-or-update line, troubleshooting table).
+
+### Removed
+- `sessions.log` and the always-on `llama-server.log` / `tunnel.log`.
+
+## 1.0.1 – 2026-10-25
 
 Fixes from a simulation run of the test checklist (`docs/simulation-results.md`).
 

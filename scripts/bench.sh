@@ -16,7 +16,9 @@ EOF
 [[ "${1:-}" == -h || "${1:-}" == --help ]] && { usage; exit 0; }
 
 have llama-bench || die "llama-bench not found in PATH. Run the installer first."
-model="${1:-$(find "$OCL_MODELS" -maxdepth 1 -name '*.gguf' -type f 2>/dev/null | sort | head -n1 || true)}"
+model="${1:-}"
+[[ -z "$model" && -f "$OCL_MODELS/default" ]] && model="$(head -n1 "$OCL_MODELS/default")"
+[[ -n "$model" ]] || model="$(find "$OCL_MODELS" -maxdepth 1 -name '*.gguf' -type f 2>/dev/null | sort | head -n1 || true)"
 [[ -n "$model" && -f "$model" ]] || die "no model given and none found in $OCL_MODELS"
 threads="${2:-$(nproc 2>/dev/null || echo 4)}"
 

@@ -14,6 +14,7 @@ Downloads MODEL_ID from Hugging Face into $OCL_MODELS and checks its SHA-256.
 If models.json has no sha256 for the model, the official hash is read from the
 Hugging Face API and printed so you can pin it in models.json.
 A file that fails verification is deleted.
+The downloaded model becomes the default that scripts/start-llama.sh starts.
 
   --list     show available model IDs
   --dry-run  print what would be downloaded
@@ -72,6 +73,8 @@ log "target: $dest"
 mkdir -p "$OCL_MODELS"
 if [[ -f "$dest" ]] && verify_sha256 "$dest" "$sha"; then
   log "already downloaded and verified"
+  printf '%s\n' "$dest" > "$OCL_MODELS/default"
+  log "default model: $file"
   exit 0
 fi
 
@@ -83,4 +86,6 @@ fi
 mv "$dest.part" "$dest"
 echo "$sha  $file" > "$dest.sha256"
 log "ready: $dest"
+printf '%s\n' "$dest" > "$OCL_MODELS/default"
+log "default model: $file (scripts/start-llama.sh starts it; restart a running server with --stop first)"
 log "start it with: scripts/start-llama.sh --model $dest"

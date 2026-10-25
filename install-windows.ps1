@@ -204,7 +204,7 @@ if not defined OCL_LLAMA_API_KEY set OCL_LLAMA_API_KEY=local-no-key
 curl.exe --silent --fail --max-time 2 http://127.0.0.1:8080/health >nul 2>&1
 if errorlevel 1 (
   for %%M in ("$OclModels\*.gguf") do (
-    start "llama-server" /min llama-server --model "%%~fM" --host 127.0.0.1 --port 8080 --ctx-size 16384 --jinja --alias local --no-webui --parallel 1
+    start "llama-server" /min llama-server --model "%%~fM" --host 127.0.0.1 --port 8080 --ctx-size 16384 --jinja --alias local --no-webui --parallel 1 --reasoning off
     goto :wait
   )
   echo [ocl] no model in $OclModels - run install-windows.ps1 -Mode Native -FetchModel qwen3-1.7b
@@ -218,7 +218,18 @@ for /L %%i in (1,1,120) do (
 echo [ocl] llama-server did not become ready
 exit /b 1
 :run
+rem Session data, logs, cache and temp files go to a per-run folder that is deleted afterwards.
+set "OCL_RUN=%TEMP%\opencode-local-run-%RANDOM%%RANDOM%"
+mkdir "%OCL_RUN%\data" "%OCL_RUN%\state" "%OCL_RUN%\cache" "%OCL_RUN%\tmp"
+set "XDG_DATA_HOME=%OCL_RUN%\data"
+set "XDG_STATE_HOME=%OCL_RUN%\state"
+set "XDG_CACHE_HOME=%OCL_RUN%\cache"
+set "TMP=%OCL_RUN%\tmp"
+set "TEMP=%OCL_RUN%\tmp"
 "$OclBin\opencode.exe" %*
+set "OCL_RC=%ERRORLEVEL%"
+rmdir /s /q "%OCL_RUN%"
+exit /b %OCL_RC%
 "@
   Log 'Next: install-windows.ps1 -Mode Native -FetchModel qwen3-1.7b, then cd into a project and run: opencode-local'
 }

@@ -48,8 +48,9 @@ up_llama="$(latest_release "$LLAMA_CPP_REPO" '^b[0-9]+$')"
 up_oc="$(latest_release "$OPENCODE_REPO" '^v[0-9]+\.[0-9]+\.[0-9]+$')"
 log "upstream: llama.cpp ${up_llama:-?}, OpenCode ${up_oc:-?}"
 if [[ -n "$up_oc" && "${up_oc%% *}" != "$OPENCODE_TAG" ]]; then
-  log "  OpenCode differs from the pin. To move: change OPENCODE_TAG (and BUN_VERSION to match its"
-  log "  package.json) in lib/common.sh, re-check ki-config against its docs, test, commit."
+  log "  OpenCode differs from the pin. To move: change OPENCODE_TAG, the OPENCODE_SHA256_* release"
+  log "  hashes (and BUN_VERSION to match its package.json) in lib/common.sh and install-windows.ps1,"
+  log "  re-check ki-config against its docs, test, commit."
 fi
 
 branch="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)"

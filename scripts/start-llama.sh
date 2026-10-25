@@ -9,6 +9,8 @@ port="${OCL_LLAMA_PORT:-8080}"
 ctx="${OCL_LLAMA_CTX:-16384}"
 threads="${OCL_LLAMA_THREADS:-$(nproc 2>/dev/null || echo 4)}"
 model="${OCL_LLAMA_MODEL:-}"
+# Qwen3 "thinks" before every answer by default; on a phone that costs minutes per step.
+reasoning="${OCL_LLAMA_REASONING:-off}"
 api_key="${OCL_LLAMA_API_KEY:-}"
 background=0
 
@@ -16,7 +18,8 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [options] [-- extra llama-server args]
 
-  -m, --model FILE    GGUF file (default: first *.gguf in $OCL_MODELS)
+  -m, --model FILE    GGUF file (default: the model last fetched with fetch-model.sh,
+                      else the first *.gguf in $OCL_MODELS)
   -c, --ctx N         context size (default: $ctx)
   -t, --threads N     CPU threads (default: $threads)
   -p, --port N        port (default: $port)
@@ -26,7 +29,8 @@ Usage: $(basename "$0") [options] [-- extra llama-server args]
       --stop          stop a background server
   -n, --dry-run       print the command only
 
-Logs go to $OCL_STATE/llama-server.log.
+Nothing is logged. For troubleshooting, OCL_DEBUG_LOG=1 writes $OCL_STATE/llama-server.log.
+OCL_LLAMA_REASONING=auto turns the model's thinking back on (default: off).
 EOF
 }
 
@@ -50,7 +54,7 @@ done
 
 mkdir -p "$OCL_STATE"
 pidfile="$OCL_STATE/llama-server.pid"
-logfile="$OCL_STATE/llama-server.log"
+logfile="$(debug_log llama-server.log)"
 
 if [[ "$stop" == 1 ]]; then
   if [[ -f "$pidfile" ]] && kill "$(cat "$pidfile")" 2>/dev/null; then
@@ -65,6 +69,10 @@ fi
 server="$(command -v llama-server || true)"
 [[ -n "$server" || "$DRY_RUN" == 1 ]] || die "llama-server not found in PATH. Run the installer first."
 
+if [[ -z "$model" && -f "$OCL_MODELS/default" ]]; then
+  model="$(head -n1 "$OCL_MODELS/default")"
+  [[ -f "$model" ]] || { warn "default model $model is gone, picking another"; model=""; }
+fi
 if [[ -z "$model" ]]; then
   model="$(find "$OCL_MODELS" -maxdepth 1 -name '*.gguf' -type f 2>/dev/null | sort | head -n1 || true)"
   [[ -n "$model" ]] || die "no model found in $OCL_MODELS. Run scripts/fetch-model.sh first."
@@ -80,7 +88,8 @@ if [[ "$host" != "127.0.0.1" && "$host" != "localhost" && "$host" != "::1" ]]; t
 fi
 
 cmd=("${server:-llama-server}" --model "$model" --host "$host" --port "$port"
-  --ctx-size "$ctx" --threads "$threads" --jinja --alias local --no-webui --parallel 1)
+  --ctx-size "$ctx" --threads "$threads" --jinja --alias local --no-webui --parallel 1
+  --reasoning "$reasoning")
 [[ -n "$api_key" && "$api_key" != "local-no-key" ]] && cmd+=(--api-key "$api_key")
 cmd+=("${extra[@]}")
 
@@ -90,11 +99,11 @@ printable="${cmd[*]}"
 log "$printable"
 [[ "$DRY_RUN" == 1 ]] && exit 0
 
-echo "--- $(date -Iseconds) $printable" >> "$logfile"
+[[ "$logfile" == /dev/null ]] || echo "--- $(date -Iseconds) $printable" >> "$logfile"
 if [[ "$background" == 1 ]]; then
   nohup "${cmd[@]}" >> "$logfile" 2>&1 &
   echo $! > "$pidfile"
-  log "started in background (pid $(cat "$pidfile")), log: $logfile"
+  log "started in background (pid $(cat "$pidfile"))"
 else
   "${cmd[@]}" 2>&1 | tee -a "$logfile"
 fi
