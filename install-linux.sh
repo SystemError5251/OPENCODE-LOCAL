@@ -8,22 +8,21 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [options]
 
-Builds llama.cpp ($LLAMA_CPP_TAG) and OpenCode ($OPENCODE_TAG) from source,
-installs Bun $BUN_VERSION (checksum-verified) and the hardened config.
+Builds llama.cpp ($LLAMA_CPP_TAG) from source, installs the official OpenCode
+$OPENCODE_TAG release (sha256-pinned) and the hardened config.
 Needs internet once; afterwards everything runs offline.
 
   -n, --dry-run      print every step without changing anything
       --skip-deps    do not install system packages
       --no-llama     skip llama.cpp (used by install-termux.sh, which builds it natively)
-      --no-opencode  skip Bun and OpenCode
-      --prebuilt-opencode
-                     install the official OpenCode release binary (sha256-pinned)
-                     instead of building it from source
+      --no-opencode  skip OpenCode
+      --from-source  build OpenCode from source with Bun $BUN_VERSION instead of
+                     installing the release binary (slow, needs much more RAM and network)
       --config-only  only (re)install ki-config/ and ki-tools/ (use after git pull)
 EOF
 }
 
-skip_deps=0 no_llama=0 no_opencode=0 config_only=0 prebuilt=0
+skip_deps=0 no_llama=0 no_opencode=0 config_only=0 prebuilt=1
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -n|--dry-run) DRY_RUN=1; shift ;;
@@ -31,7 +30,8 @@ while [[ $# -gt 0 ]]; do
     --no-llama) no_llama=1; shift ;;
     --no-opencode) no_opencode=1; shift ;;
     --config-only) config_only=1; shift ;;
-    --prebuilt-opencode) prebuilt=1; shift ;;
+    --prebuilt-opencode) prebuilt=1; shift ;; # default since 1.1, kept for old instructions
+    --from-source) prebuilt=0; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
@@ -84,6 +84,7 @@ case ":$PATH:" in
   *) warn "$OCL_BIN is not in PATH. Add this to your shell profile: export PATH=\"$OCL_BIN:\$PATH\"" ;;
 esac
 
+[[ -n "${OCL_QUICKSTART:-}" ]] && exit 0  # quickstart.sh prints its own next steps
 cat >&2 <<EOF
 
 Done. Next steps:

@@ -5,7 +5,7 @@ Go through this list after installing or updating, and tick what works.
 
 ## 1. Update to the current version (Termux)
 ```bash
-cd ~/opencode-local && git pull && ./install-termux.sh --update
+cd ~/opencode-local && git pull && ./quickstart.sh
 ```
 - [ ] finishes with "Done." and no error
 

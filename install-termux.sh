@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install OPENCODE-LOCAL on Android/Termux.
 #   llama.cpp: built natively in Termux (fastest).
-#   OpenCode:  built inside Debian (proot-distro), because Bun needs glibc.
+#   OpenCode:  official release binary inside Debian (proot-distro), because it needs glibc.
 set -euo pipefail
 # shellcheck source=SCRIPTDIR/lib/common.sh
 source "$(dirname "$0")/lib/common.sh"
@@ -16,22 +16,22 @@ Usage: $(basename "$0") [options]
   -n, --dry-run      print every step without changing anything
       --skip-deps    do not run pkg install
       --no-llama     skip the native llama.cpp build
-      --no-opencode  skip Debian, Bun and OpenCode (llama.cpp only)
-      --prebuilt-opencode
-                     use the official OpenCode release binary (sha256-pinned) in Debian
-                     instead of building it from source (recommended on phones)
+      --no-opencode  skip Debian and OpenCode (llama.cpp only)
+      --from-source  build OpenCode from source inside Debian instead of installing
+                     the official release binary (slow, needs much more RAM and network)
       --update       after git pull: refresh config, MCP tools and launcher only (no rebuilds)
 EOF
 }
 
-skip_deps=0 no_llama=0 no_opencode=0 update=0 prebuilt=0
+skip_deps=0 no_llama=0 no_opencode=0 update=0 prebuilt=1
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -n|--dry-run) DRY_RUN=1; shift ;;
     --skip-deps) skip_deps=1; shift ;;
     --no-llama) no_llama=1; shift ;;
     --no-opencode) no_opencode=1; shift ;;
-    --prebuilt-opencode) prebuilt=1; shift ;;
+    --prebuilt-opencode) prebuilt=1; shift ;; # default since 1.1, kept for old instructions
+    --from-source) prebuilt=0; shift ;;
     --update) update=1 skip_deps=1 no_llama=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
@@ -64,7 +64,7 @@ if [[ "$no_opencode" == 0 ]]; then
   run "${guest[@]}" bash -c "apt-get update && apt-get install -y --no-install-recommends git curl unzip jq ca-certificates python3 gnupg ffmpeg"
   guest_args=(--skip-deps --no-llama)
   [[ "$update" == 1 ]] && guest_args+=(--config-only)
-  [[ "$prebuilt" == 1 ]] && guest_args+=(--prebuilt-opencode)
+  [[ "$prebuilt" == 0 ]] && guest_args+=(--from-source)
   [[ "$DRY_RUN" == 1 ]] && guest_args+=(--dry-run)
   run "${guest[@]}" bash "$GUEST_REPO/install-linux.sh" "${guest_args[@]}"
 fi
@@ -92,6 +92,7 @@ EOF
   chmod 0755 "$launcher"
 fi
 
+[[ -n "${OCL_QUICKSTART:-}" ]] && exit 0  # quickstart.sh prints its own next steps
 cat >&2 <<EOF
 
 Done. Next steps (in Termux):

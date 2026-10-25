@@ -20,4 +20,4 @@ for _ in $(seq 1 "$wait_s"); do
   healthy && { log "model ready"; exit 0; }
   sleep 1
 done
-die "llama-server did not become ready - see $OCL_STATE/llama-server.log"
+die "llama-server did not become ready - rerun with OCL_DEBUG_LOG=1 and check $OCL_STATE/llama-server.log"

@@ -88,13 +88,30 @@ on the PC. On Android the firewall app must allow Termux to reach the LAN, but n
   - File modes like 0600 for the crypto key do not apply on Windows. Keep the key in your user profile
     and back it up.
 
-## Logs
-| What | Where |
-|---|---|
-| llama-server output and start commands | `~/.local/state/opencode-local/llama-server.log` |
-| OpenCode session starts (directory, time) | `~/.local/state/opencode-local/sessions.log` |
-| OpenCode's own logs, incl. every tool call | `~/.local/share/opencode/log/` |
-| Benchmarks / Phase 0 reports | `~/.local/state/opencode-local/` |
-| Backups, crypto key | `~/.local/share/opencode-local/backups/`, `.../keys/crypto.pass` – **back up the key** |
+## No session history, no logs
 
-On Termux the OpenCode paths are inside Debian: `proot-distro login debian -- ls /root/.local/share/opencode/log`.
+Nothing about a session is kept once OpenCode exits.
+
+| What | Where it goes |
+|---|---|
+| OpenCode sessions, messages, undo snapshots, its own logs (incl. tool calls), cache | private per-run folder `opencode-local-<uid>/run.*` in `$XDG_RUNTIME_DIR` or `/dev/shm` (RAM) if available, else `$TMPDIR`; deleted by `opencode-local` when OpenCode exits |
+| Temp files of OpenCode, tools and commands it runs | same folder (`TMPDIR` points there) |
+| Leftovers of a run that was killed (closed terminal, reboot) | deleted at the next start of `opencode-local` |
+| llama-server and SSH tunnel output | discarded (`/dev/null`); `OCL_DEBUG_LOG=1` writes them to `~/.local/state/opencode-local/` for troubleshooting |
+| Python bytecode of the MCP tools | not written (`PYTHONDONTWRITEBYTECODE=1`) |
+
+Consequences: a session cannot be resumed after you quit, and undo works only within a session.
+
+What stays, on purpose: the config, models, MCP tools, the crypto key
+(`~/.local/share/opencode-local/keys/crypto.pass` – **back it up**), backups
+(`~/.local/share/opencode-local/backups/`), the project's `.trash/`, and the Phase 0 / benchmark reports you
+create yourself (`~/.local/state/opencode-local/`).
+
+Data from versions before 1.1 (`~/.local/share/opencode`, `~/.local/state/opencode`, `~/.cache/opencode`,
+`sessions.log`, `llama-server.log`, `tunnel.log`) is removed once with `scripts/wipe-sessions.sh`; on Termux it
+also cleans the Debian side.
+
+Limits: on Termux inside proot there is no RAM-backed folder, so the run folder is on flash storage and is
+deleted normally, not overwritten (flash memory cannot be reliably overwritten anyway; use Android's device
+encryption). Your shell's own history (`~/.bash_history`) is not touched. On native Windows the launcher uses
+`%TEMP%` and deletes it afterwards; this path is untested.

@@ -10,7 +10,7 @@ fail() { printf '\033[31mFAIL\033[0m %s\n' "$1"; fails=$((fails + 1)); }
 skip() { printf '\033[33mSKIP\033[0m %s\n' "$1"; }
 check() { local name="$1"; shift; if "$@" >/tmp/ocl-check.log 2>&1; then pass "$name"; else fail "$name"; sed 's/^/    /' /tmp/ocl-check.log | tail -20; fi; }
 
-shell_files=(install-linux.sh install-termux.sh lib/common.sh ki-config/env.sh scripts/*.sh scripts/opencode-local tests/run-all.sh)
+shell_files=(quickstart.sh install-linux.sh install-termux.sh lib/common.sh ki-config/env.sh scripts/*.sh scripts/opencode-local tests/run-all.sh)
 
 for f in "${shell_files[@]}"; do check "bash -n $f" bash -n "$f"; done
 if command -v shellcheck >/dev/null; then
@@ -50,6 +50,8 @@ check "install-linux.sh --dry-run" env HOME="$tmp_home" ./install-linux.sh --dry
 check "install-termux.sh --dry-run" env HOME="$tmp_home" PREFIX="$tmp_home/prefix" ./install-termux.sh --dry-run
 check "install-termux.sh --update --dry-run" env HOME="$tmp_home" PREFIX="$tmp_home/prefix" ./install-termux.sh --update --dry-run
 check "start-llama.sh refuses 0.0.0.0 without key" bash -c "! HOME=$tmp_home OCL_LLAMA_API_KEY= scripts/start-llama.sh -n -m x.gguf --host 0.0.0.0"
+check "quickstart.sh --dry-run" env HOME="$tmp_home" ./quickstart.sh --dry-run --model qwen3-1.7b
+check "wipe-sessions.sh --dry-run" env HOME="$tmp_home" scripts/wipe-sessions.sh --dry-run
 check "fetch-model.sh --list" env HOME="$tmp_home" scripts/fetch-model.sh --list
 check "tunnel.sh --dry-run" env HOME="$tmp_home" scripts/tunnel.sh -n user@pc
 rm -rf "$tmp_home"

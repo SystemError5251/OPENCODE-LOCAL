@@ -11,3 +11,4 @@ export NO_PROXY="localhost,127.0.0.1${NO_PROXY:+,$NO_PROXY}"
 export no_proxy="$NO_PROXY"
 # llama-server API key. Only needed when the model host is not 127.0.0.1 (see docs/security.md).
 export OCL_LLAMA_API_KEY="${OCL_LLAMA_API_KEY:-local-no-key}"
+export PYTHONDONTWRITEBYTECODE=1        # MCP tools leave no __pycache__ behind

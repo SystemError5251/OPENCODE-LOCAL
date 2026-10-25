@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Launcher: load the offline environment and start OpenCode in the current directory.
+# Sessions leave nothing behind: OpenCode's database, logs, snapshots, cache and temp files
+# live in a private per-run directory that is deleted when OpenCode exits.
 set -euo pipefail
 
 OCL_HOME="${OCL_HOME:-$HOME/.local/share/opencode-local}"
@@ -22,6 +24,29 @@ if ! curl --silent --fail --max-time 2 "http://127.0.0.1:$port/health" >/dev/nul
   echo "[ocl] warning: no ready model server on 127.0.0.1:$port (start it with scripts/ensure-llama.sh)" >&2
 fi
 
-mkdir -p "${OCL_STATE:-$HOME/.local/state/opencode-local}"
-echo "$(date -Iseconds) start $PWD" >> "${OCL_STATE:-$HOME/.local/state/opencode-local}/sessions.log"
-exec "$OCL_BIN/opencode" "$@"
+# RAM-backed when the system offers it (XDG_RUNTIME_DIR, /dev/shm), so nothing reaches the disk.
+base=""
+for d in "${XDG_RUNTIME_DIR:-}" /dev/shm "${TMPDIR:-/tmp}"; do
+  if [[ -n "$d" && -d "$d" && -w "$d" ]]; then base="$d/opencode-local-$(id -u)"; break; fi
+done
+mkdir -p "$base" && chmod 700 "$base"
+# Remove what an earlier run could not clean up (killed terminal, phone reboot).
+for old in "$base"/run.*; do
+  [[ -d "$old" ]] || continue
+  pid="$(cat "$old/pid" 2>/dev/null || true)"
+  if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then rm -rf "$old"; fi
+done
+
+run_dir="$(mktemp -d "$base/run.XXXXXX")"
+echo $$ > "$run_dir/pid"
+cleanup() { rm -rf "$run_dir"; }
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
+
+mkdir -p "$run_dir"/{data,state,cache,tmp}
+export XDG_DATA_HOME="$run_dir/data" XDG_STATE_HOME="$run_dir/state" XDG_CACHE_HOME="$run_dir/cache"
+export TMPDIR="$run_dir/tmp" TMP="$run_dir/tmp" TEMP="$run_dir/tmp"
+
+# Not exec: the shell has to stay around to delete the run directory afterwards.
+"$OCL_BIN/opencode" "$@"
