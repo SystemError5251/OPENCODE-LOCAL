@@ -7,6 +7,9 @@ LLAMA_CPP_REPO="https://github.com/ggml-org/llama.cpp.git"
 LLAMA_CPP_TAG="b11857"
 OPENCODE_REPO="https://github.com/sst/opencode.git"
 OPENCODE_TAG="v1.19.4"
+# Official release archives for --prebuilt-opencode (sha256 of the .tar.gz, checked 2026-10-25).
+OPENCODE_SHA256_LINUX_X64="849bd6b3d959a1d2ef200ed1634a51c79a45ca236aa26665d75debd694805cce"
+OPENCODE_SHA256_LINUX_ARM64="8568230ccd847dc93e95b9f6894379077d3e014a16b48040743573e77c23e85f"
 BUN_VERSION="1.4.4" # must match "packageManager" in OpenCode's package.json
 
 # --- Paths -------------------------------------------------------------------
@@ -79,10 +82,12 @@ build_llama_cpp() {
   else
     run git clone --depth 1 --branch "$LLAMA_CPP_TAG" "$LLAMA_CPP_REPO" "$src"
   fi
-  # LLAMA_CURL=OFF: the server must never download models by itself.
+  # LLAMA_OPENSSL=OFF: no HTTPS client, so the server can never download models by itself
+  #   (LLAMA_CURL is deprecated and no longer does this).
+  # LLAMA_USE_PREBUILT_UI=OFF: do not fetch the web UI from Hugging Face during the build.
   # BUILD_SHARED_LIBS=OFF: self-contained binaries that keep working after the build dir is gone.
   run cmake -S "$src" -B "$src/build" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
-    -DLLAMA_CURL=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF
+    -DLLAMA_OPENSSL=OFF -DLLAMA_USE_PREBUILT_UI=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF
   run cmake --build "$src/build" --target llama-server llama-bench -j"$jobs"
   for b in llama-server llama-bench; do
     run install -m 0755 "$src/build/bin/$b" "$prefix/$b"
@@ -140,6 +145,28 @@ build_opencode() {
   log "OpenCode $OPENCODE_TAG installed to $OCL_BIN/opencode"
 }
 
+# install_opencode_prebuilt: the official release binary for $OPENCODE_TAG, checked against the pinned sha256.
+# Much lighter than build_opencode (no Bun, no ~2500 npm packages), which matters on a phone.
+install_opencode_prebuilt() {
+  local arch sha tmp asset
+  case "$(uname -m)" in
+    x86_64|amd64) arch="x64" sha="$OPENCODE_SHA256_LINUX_X64" ;;
+    aarch64|arm64) arch="arm64" sha="$OPENCODE_SHA256_LINUX_ARM64" ;;
+    *) die "no prebuilt OpenCode for $(uname -m); build from source instead" ;;
+  esac
+  asset="opencode-linux-$arch.tar.gz"
+  tmp="$(mktemp -d)"
+  run mkdir -p "$OCL_BIN"
+  download "https://github.com/sst/opencode/releases/download/$OPENCODE_TAG/$asset" "$tmp/$asset"
+  if [[ "$DRY_RUN" != 1 ]]; then
+    verify_sha256 "$tmp/$asset" "$sha" || { rm -rf "$tmp"; die "OpenCode download failed verification"; }
+  fi
+  run tar -xzf "$tmp/$asset" -C "$tmp"
+  run install -m 0755 "$tmp/opencode" "$OCL_BIN/opencode"
+  run rm -rf "$tmp"
+  log "OpenCode $OPENCODE_TAG (official release) installed to $OCL_BIN/opencode"
+}
+
 # --- Config ------------------------------------------------------------------------
 # install_config: copy ki-config/ into ~/.config/opencode, backing up what is there.
 install_config() {
@@ -157,5 +184,10 @@ install_config() {
   done
   run mkdir -p "$OCL_HOME"
   run install -m 0644 "$REPO_ROOT/ki-config/env.sh" "$OCL_HOME/env.sh"
-  log "config installed to $dst"
+  # Local MCP servers (Phase 4), referenced from opencode.json.
+  run mkdir -p "$OCL_HOME/tools"
+  for f in "$REPO_ROOT"/ki-tools/*.py; do
+    run install -m 0644 "$f" "$OCL_HOME/tools/$(basename "$f")"
+  done
+  log "config and MCP tools installed to $dst and $OCL_HOME/tools"
 }

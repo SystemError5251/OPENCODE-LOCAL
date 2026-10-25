@@ -11,6 +11,8 @@
 | Agent leaves the project | `external_directory: deny`; on Termux only the current project is bind-mounted into Debian |
 | Model server reachable from the network | `llama-server` binds to `127.0.0.1`; other addresses are refused without a 24+ character API key |
 | Tampered downloads | Pinned versions (`lib/common.sh`), HTTPS only, Bun checked against `SHASUMS256.txt`, models checked against SHA-256, never `curl \| sh` |
+| MCP tool does damage | Tools never delete or overwrite, paths are sandboxed to the project, every changing `ocl_*` tool asks first (see [ki-tools/README.md](../ki-tools/README.md)) |
+| Encryption key leaks to the model | Passphrase lives outside the project (0600) and is passed to gpg as a file, never in tool input/output |
 | Silent updates change behaviour | `autoupdate: false` + `OPENCODE_DISABLE_AUTOUPDATE=1`; updates only by changing the pins |
 
 ## What each setting does
@@ -26,6 +28,8 @@
   - `webfetch`, `websearch`: deny
   - `doom_loop`: deny (stops a model that repeats the same tool call)
   - `skill`: ask, `task` (subagents): allow – subagents inherit the same permission rules
+  - `ocl_*`: ask – our MCP tools. Without this rule they would run unasked, because OpenCode allows
+    unknown permissions by default. Read-only tools and `ocl_backup_create` are allowed after it.
 
 ### `ki-config/env.sh`
 Sourced by the `opencode-local` launcher:
@@ -60,6 +64,12 @@ unshare -rn opencode-local   # new network namespace with loopback only
 Note: llama-server must then run in the same namespace, or use the system firewall instead.
 
 ### Model host in the home network (Phase 7)
+**Recommended: SSH tunnel** (`scripts/tunnel.sh user@pc`). The PC's llama-server stays on its own
+`127.0.0.1`, so nothing is exposed to the network. Traffic is encrypted and authenticated by SSH, and
+OpenCode's config does not change. Use SSH keys (`ssh-keygen`, `ssh-copy-id`) and disable password login
+on the PC. On Android the firewall app must allow Termux to reach the LAN, but not the internet.
+
+**Alternative without SSH** (plain HTTP on the LAN, only with key + firewall):
 1. Generate a key: `openssl rand -hex 24`, export it as `OCL_LLAMA_API_KEY` on host and client.
 2. Start on the host: `scripts/start-llama.sh --host 192.168.1.10`.
 3. Allow only the client, e.g. with ufw:
@@ -68,8 +78,15 @@ Note: llama-server must then run in the same namespace, or use the system firewa
    sudo ufw deny 8080/tcp
    ```
 4. On the client change `baseURL` in `~/.config/opencode/opencode.json` to `http://192.168.1.10:8080/v1`.
-Simpler and encrypted alternative: keep the host on `127.0.0.1` and use an SSH tunnel:
-`ssh -N -L 8080:127.0.0.1:8080 user@192.168.1.10`.
+
+### Windows notes
+- WSL2 mode is the same pinned, source-built setup as Linux.
+- Native mode:
+  - The OpenCode release zip is checked against a SHA-256 pinned in `install-windows.ps1`.
+  - llama.cpp comes from winget (`ggml.llamacpp`); winget checks its own manifest hash, but the
+    version is not pinned.
+  - File modes like 0600 for the crypto key do not apply on Windows. Keep the key in your user profile
+    and back it up.
 
 ## Logs
 | What | Where |
@@ -78,5 +95,6 @@ Simpler and encrypted alternative: keep the host on `127.0.0.1` and use an SSH t
 | OpenCode session starts (directory, time) | `~/.local/state/opencode-local/sessions.log` |
 | OpenCode's own logs, incl. every tool call | `~/.local/share/opencode/log/` |
 | Benchmarks / Phase 0 reports | `~/.local/state/opencode-local/` |
+| Backups, crypto key | `~/.local/share/opencode-local/backups/`, `.../keys/crypto.pass` – **back up the key** |
 
 On Termux the OpenCode paths are inside Debian: `proot-distro login debian -- ls /root/.local/share/opencode/log`.

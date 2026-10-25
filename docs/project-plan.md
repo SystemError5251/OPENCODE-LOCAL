@@ -72,14 +72,14 @@ Details: [security.md](security.md).
 ## 8. Phases and milestones
 | Phase | Content | Result | Status |
 |---|---|---|---|
-| 0 – Feasibility | Does Bun/OpenCode run in Debian proot? Does llama.cpp run in Termux? | Clear yes/no list per device | script ready: `scripts/phase0-check.sh` |
-| 1 – Local model | Build llama.cpp, start a small model, measure speed | Tokens/second known | scripts ready: `fetch-model.sh`, `bench.sh` |
-| 2 – Connect OpenCode | Build from source, add local provider, telemetry off | Chat with the local model | installers + `ki-config/` ready |
-| 3 – Security | Permissions, directory limits, firewall, logging | Hardened default config | config ready, firewall documented |
-| 4 – Own tools | MCP: encryption, video, backup | AI performs tasks locally | open |
-| 5 – More platforms | Linux and Windows (WSL2), installer scripts | Same behaviour everywhere | Linux done, Windows open |
-| 6 – Polish | Languages, docs, update script without auto-update | Release v1 | open |
-| 7 – Optional | PC as model host in the home network, native Android binary | More quality or less overhead | open |
+| 0 – Feasibility | Does Bun/OpenCode run in Debian proot? Does llama.cpp run in Termux? | Clear yes/no list per device | OpenCode runs in Debian proot on the 8 GB phone |
+| 1 – Local model | Build llama.cpp, start a small model, measure speed | Tokens/second known | scripts ready: `fetch-model.sh`, `bench.sh` – numbers from the phone pending |
+| 2 – Connect OpenCode | Build from source, add local provider, telemetry off | Chat with the local model | done: OpenCode runs on the phone |
+| 3 – Security | Permissions, directory limits, firewall, logging | Hardened default config | done; firewall documented (manual) |
+| 4 – Own tools | MCP: encryption, video, backup | AI performs tasks locally | done: `ki-tools/` (files, backup, crypto, video) |
+| 5 – More platforms | Linux and Windows (WSL2), installer scripts | Same behaviour everywhere | done: `install-windows.ps1` (WSL2 or native) – not yet run on a real Windows PC |
+| 6 – Polish | Languages, docs, update script without auto-update | Release v1 | done: `scripts/update.sh`, `README.de.md`, `tests/run-all.sh` + CI, v1.0.0 |
+| 7 – Optional | PC as model host in the home network, native Android binary | More quality or less overhead | PC host done (`scripts/tunnel.sh`); native Android binary not needed, Debian proot works |
 
 ## 9. Risks
 - **OpenCode does not run under Android/Termux:** Debian proot or PC host as fallback

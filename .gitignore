@@ -5,3 +5,4 @@
 # Build output and logs
 build/
 *.log
+__pycache__/

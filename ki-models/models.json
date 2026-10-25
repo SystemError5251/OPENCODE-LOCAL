@@ -1,5 +1,5 @@
 {
-  "_comment": "Curated GGUF models per device tier. sha256 may be left empty: scripts/fetch-model.sh then reads the official hash from the Hugging Face API, prints it, and you should pin it here.",
+  "_comment": "Curated GGUF models per device tier. Every sha256 is pinned (checked 2026-10-25 against the Hugging Face API and a real download for qwen2.5-coder-1.5b, qwen3-1.7b and qwen3-4b). For a new entry leave sha256 empty: scripts/fetch-model.sh then reads the official hash from the Hugging Face API and prints it so you can pin it here.",
   "models": [
     {
       "id": "qwen2.5-coder-0.5b",
@@ -9,30 +9,52 @@
       "revision": "main",
       "size_gb": 0.4,
       "ctx": 8192,
-      "sha256": "",
+      "sha256": "1d9614638d18024d0fbb36575a15f1302a3adf044df10345688ec4f6e1c4ff32",
       "notes": "Smoke test only. Too weak for real coding."
     },
     {
-      "id": "qwen2.5-coder-1.5b",
+      "id": "qwen3-1.7b",
       "tier": "phone-8gb",
+      "repo": "Qwen/Qwen3-1.7B-GGUF",
+      "file": "Qwen3-1.7B-Q8_0.gguf",
+      "revision": "main",
+      "size_gb": 1.8,
+      "ctx": 16384,
+      "sha256": "061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a",
+      "notes": "Default for phones with 6-8 GB RAM. Calls tools correctly (reads files); edits often fail. Official Qwen quantization."
+    },
+    {
+      "id": "qwen3-4b",
+      "tier": "phone-12gb",
+      "repo": "Qwen/Qwen3-4B-GGUF",
+      "file": "Qwen3-4B-Q4_K_M.gguf",
+      "revision": "main",
+      "size_gb": 2.5,
+      "ctx": 16384,
+      "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+      "notes": "Phones with 12+ GB RAM or PCs. Calls tools correctly, about 2.5x slower than qwen3-1.7b. Official Qwen quantization."
+    },
+    {
+      "id": "qwen2.5-coder-1.5b",
+      "tier": "legacy",
       "repo": "Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF",
       "file": "qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
       "revision": "main",
       "size_gb": 1.1,
       "ctx": 8192,
-      "sha256": "",
-      "notes": "Default for phones with 6-8 GB RAM."
+      "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+      "notes": "Answers in chat, but in the 2026-10-25 test it wrote tool calls as plain text instead of calling them, so OpenCode cannot use it as an agent. Kept for comparison."
     },
     {
       "id": "qwen2.5-coder-3b",
-      "tier": "phone-8gb",
+      "tier": "legacy",
       "repo": "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF",
       "file": "qwen2.5-coder-3b-instruct-q4_k_m.gguf",
       "revision": "main",
       "size_gb": 2.1,
       "ctx": 4096,
-      "sha256": "",
-      "notes": "Upper limit for 8 GB phones. Keep the context short."
+      "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+      "notes": "Answers in chat, but in the 2026-10-25 test it wrote tool calls as plain text instead of calling them, so OpenCode cannot use it as an agent. Kept for comparison."
     },
     {
       "id": "qwen2.5-coder-7b",
@@ -42,7 +64,7 @@
       "revision": "main",
       "size_gb": 4.7,
       "ctx": 8192,
-      "sha256": "",
+      "sha256": "1664fccab734674a50763490a8c6931b70e3f2f8ec10031b54806d30e5f956b6",
       "notes": "Phones with 12+ GB RAM (slow) or PCs with 16 GB. Community quantization of the official weights."
     },
     {
@@ -53,7 +75,7 @@
       "revision": "main",
       "size_gb": 9.0,
       "ctx": 16384,
-      "sha256": "",
+      "sha256": "2946d28c9e1bb2bcae6d42e8678863a31775df6f740315c7d7e6d6b6411f5937",
       "notes": "PC with 32 GB RAM or a GPU. Community quantization of the official weights."
     }
   ]

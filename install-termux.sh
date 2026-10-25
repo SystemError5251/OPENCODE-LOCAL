@@ -17,16 +17,22 @@ Usage: $(basename "$0") [options]
       --skip-deps    do not run pkg install
       --no-llama     skip the native llama.cpp build
       --no-opencode  skip Debian, Bun and OpenCode (llama.cpp only)
+      --prebuilt-opencode
+                     use the official OpenCode release binary (sha256-pinned) in Debian
+                     instead of building it from source (recommended on phones)
+      --update       after git pull: refresh config, MCP tools and launcher only (no rebuilds)
 EOF
 }
 
-skip_deps=0 no_llama=0 no_opencode=0
+skip_deps=0 no_llama=0 no_opencode=0 update=0 prebuilt=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -n|--dry-run) DRY_RUN=1; shift ;;
     --skip-deps) skip_deps=1; shift ;;
     --no-llama) no_llama=1; shift ;;
     --no-opencode) no_opencode=1; shift ;;
+    --prebuilt-opencode) prebuilt=1; shift ;;
+    --update) update=1 skip_deps=1 no_llama=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
@@ -48,14 +54,17 @@ fi
 
 # 3. Debian proot with Bun + OpenCode
 if [[ "$no_opencode" == 0 ]]; then
-  if [[ -d "${PREFIX:-}/var/lib/proot-distro/installed-rootfs/$DISTRO" ]]; then
+  # Ask proot-distro itself: the rootfs location differs between proot-distro versions.
+  if proot-distro login "$DISTRO" -- true >/dev/null 2>&1; then
     log "proot-distro $DISTRO already installed"
   else
     run proot-distro install "$DISTRO"
   fi
   guest=(proot-distro login "$DISTRO" --bind "$REPO_ROOT:$GUEST_REPO" --)
-  run "${guest[@]}" bash -c "apt-get update && apt-get install -y --no-install-recommends git curl unzip jq ca-certificates"
+  run "${guest[@]}" bash -c "apt-get update && apt-get install -y --no-install-recommends git curl unzip jq ca-certificates python3 gnupg ffmpeg"
   guest_args=(--skip-deps --no-llama)
+  [[ "$update" == 1 ]] && guest_args+=(--config-only)
+  [[ "$prebuilt" == 1 ]] && guest_args+=(--prebuilt-opencode)
   [[ "$DRY_RUN" == 1 ]] && guest_args+=(--dry-run)
   run "${guest[@]}" bash "$GUEST_REPO/install-linux.sh" "${guest_args[@]}"
 fi
@@ -76,13 +85,7 @@ set -euo pipefail
 case "\$PWD" in "\$HOME"|/|/sdcard|/storage/emulated/0)
   echo "[ocl] refusing to start in \$PWD - cd into a project directory first" >&2; exit 1 ;;
 esac
-if ! curl --silent --max-time 2 "http://127.0.0.1:\${OCL_LLAMA_PORT:-8080}/health" >/dev/null 2>&1; then
-  "$REPO_ROOT/scripts/start-llama.sh" --background
-  for _ in \$(seq 1 60); do
-    curl --silent --max-time 1 "http://127.0.0.1:\${OCL_LLAMA_PORT:-8080}/health" >/dev/null 2>&1 && break
-    sleep 1
-  done
-fi
+"$REPO_ROOT/scripts/ensure-llama.sh"
 termux-wake-lock 2>/dev/null || true
 exec proot-distro login $DISTRO --bind "\$PWD:/work" -- bash -c 'cd /work && exec /root/.local/bin/opencode-local "\$@"' opencode-local "\$@"
 EOF
@@ -92,9 +95,9 @@ fi
 cat >&2 <<EOF
 
 Done. Next steps (in Termux):
-  1. scripts/fetch-model.sh qwen2.5-coder-1.5b
+  1. scripts/fetch-model.sh qwen3-1.7b
   2. scripts/bench.sh                       # Phase 1: tokens/s
-  3. cd ~/projects/myproject && opencode-local
+  3. mkdir -p ~/projects/myproject && cd ~/projects/myproject && opencode-local
   4. Stop the model when done: scripts/start-llama.sh --stop ; termux-wake-unlock
 Then block Termux's network access in your firewall app (docs/security.md).
 EOF
