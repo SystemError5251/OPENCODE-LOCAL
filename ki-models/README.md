@@ -35,8 +35,8 @@ download fully reproducible.
 
 ## Context size
 
-OpenCode's system prompt plus the tool descriptions already take about 7,500 tokens before your first
-message (measured 2026-10-25). With the old 8192 context OpenCode compacted the conversation on every step
+OpenCode's system prompt plus the tool descriptions take about 7,000 tokens with the full `coder` agent
+and about 2,900 with the default `lite` agent, before your first message (measured 2026-10-25). With the old 8192 context OpenCode compacted the conversation on every step
 and never finished, so the default is now 16384 (`scripts/start-llama.sh`, `limit.context` in
 `ki-config/opencode.json`). Change both together.
 
@@ -53,7 +53,10 @@ model's chat template handles them. Results from the 2026-10-25 test (`docs/simu
 | Model | Reads a file via tool | Edits a file |
 |---|---|---|
 | Qwen2.5-Coder 1.5B | no: writes the tool call as text | no |
-| Qwen3 1.7B | yes | no: wrong `oldString`, gives up |
+| Qwen3 1.7B, `coder` agent | yes | no: wrong `oldString`, gives up, may overwrite the file |
+| Qwen3 1.7B, `lite` agent | yes | yes: 6 of 6 on a 1-line file, 2 of 3 on a 25-line file, ~50 s each |
 | Qwen3 4B | yes | not finished within 25 min on 4 x86 cores |
 
-Small models are fine for questions about code; for real edits plan on the PC host (Phase 7).
+The `lite` agent edits through `ocl_files_write` and `ocl_files_replace`, which forgive the typical
+small-model mistakes (line numbers copied from the read output, `\n` written as text). Check the result
+anyway; for bigger changes plan on the PC host (Phase 7).

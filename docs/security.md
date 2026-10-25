@@ -99,6 +99,7 @@ Nothing about a session is kept once OpenCode exits.
 | Leftovers of a run that was killed (closed terminal, reboot) | deleted at the next start of `opencode-local` |
 | llama-server and SSH tunnel output | discarded (`/dev/null`); `OCL_DEBUG_LOG=1` writes them to `~/.local/state/opencode-local/` for troubleshooting |
 | Python bytecode of the MCP tools | not written (`PYTHONDONTWRITEBYTECODE=1`) |
+| "A session is open" for the idle stop of the model server | an empty file named after the launcher's process id in `~/.local/state/opencode-local/sessions/`, removed when the session ends (or at the next check if the session was killed) |
 
 Consequences: a session cannot be resumed after you quit, and undo works only within a session.
 

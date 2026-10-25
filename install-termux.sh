@@ -85,9 +85,13 @@ set -euo pipefail
 case "\$PWD" in "\$HOME"|/|/sdcard|/storage/emulated/0)
   echo "[ocl] refusing to start in \$PWD - cd into a project directory first" >&2; exit 1 ;;
 esac
+# While the marker exists the model server stays up; afterwards it stops itself when idle.
+marker="$OCL_STATE/sessions/\$\$"
+mkdir -p "$OCL_STATE/sessions" && : > "\$marker"
+trap 'rm -f "\$marker"; termux-wake-unlock 2>/dev/null || true' EXIT
 "$REPO_ROOT/scripts/ensure-llama.sh"
 termux-wake-lock 2>/dev/null || true
-exec proot-distro login $DISTRO --bind "\$PWD:/work" -- bash -c 'cd /work && exec /root/.local/bin/opencode-local "\$@"' opencode-local "\$@"
+proot-distro login $DISTRO --bind "\$PWD:/work" -- bash -c 'cd /work && exec /root/.local/bin/opencode-local "\$@"' opencode-local "\$@"
 EOF
   chmod 0755 "$launcher"
 fi

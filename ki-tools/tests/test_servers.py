@@ -75,7 +75,7 @@ class TestProtocol(Base):
 
     def test_list_and_unknown(self):
         names = {t["name"] for t in self.c.rpc("tools/list")["tools"]}
-        self.assertEqual(names, {"info", "largest", "trash", "list_trash", "restore", "move"})
+        self.assertEqual(names, {"info", "largest", "trash", "list_trash", "restore", "move", "write", "replace"})
         self.assertTrue(self.c.call("nope")[0])
         with self.assertRaises(RuntimeError):
             self.c.rpc("does/not/exist")
@@ -105,6 +105,34 @@ class TestFiles(Base):
         self.assertTrue(self.c.call("move", source="a.txt", target="sub/b.txt")[0])
         self.c.ok("move", source="a.txt", target="new/a.txt")
         self.assertTrue((self.project / "new/a.txt").exists())
+
+
+    def test_write_and_replace(self):
+        self.c.ok("write", path="new/c.py", content="1: x = 1\n2: print(x)\n(End of file - total 2 lines)")
+        self.assertEqual((self.project / "new/c.py").read_text(), "x = 1\nprint(x)\n")
+        self.c.ok("replace", path="new/c.py", old="1: x = 1", new="1: x = 2")
+        self.assertEqual((self.project / "new/c.py").read_text(), "x = 2\nprint(x)\n")
+        self.c.ok("replace", path="new/c.py", old="2: print(x)\n\n(End of file - total 2 lines)",
+                  new="2: print(x)\n3: def f():\n        return x")
+        self.assertEqual((self.project / "new/c.py").read_text(), "x = 2\nprint(x)\ndef f():\n        return x\n")
+        self.c.ok("write", path="d.py", content='1: print("hi\\n")\n2: def add(a, b):\\n\\treturn a + b\\n')
+        self.assertEqual((self.project / "d.py").read_text(), 'print("hi\\n")\ndef add(a, b):\n\treturn a + b\n')
+        self.c.ok("write", path="e.py", content='1: x = 1\n2: def f():\\n3:     return x\\n')
+        self.assertEqual((self.project / "e.py").read_text(), "x = 1\ndef f():\n    return x\n")
+        self.c.ok("replace", path="e.py", old="1: x = 1\n\n(End of file - total 3 lines)",
+                  new="1: x = 1\n\n(End of file - total 3 lines)\n2: y = 2")
+        self.assertEqual((self.project / "e.py").read_text(), "x = 1\n\ny = 2\ndef f():\n    return x\n")
+        self.c.ok("write", path="keys.yaml", content="1: one\n3: three\n")
+        self.assertEqual((self.project / "keys.yaml").read_text(), "1: one\n3: three\n")
+        self.c.ok("write", path="a.txt", content="bye")
+        self.assertEqual((self.project / "a.txt").read_text(), "bye\n")
+        olds = sorted(i["path"] for i in json.loads(self.c.ok("list_trash")))
+        self.assertEqual(olds, ["a.txt", "e.py", "new/c.py", "new/c.py"])
+        self.assertTrue(self.c.call("replace", path="a.txt", old="nope", new="x")[0])
+        self.assertTrue(self.c.call("replace", path="a.txt", old="bye", new="bye")[0])
+        for bad in (".env", "sub/.env.local", "../secret.txt", ".git/config", ".trash/x"):
+            self.assertTrue(self.c.call("write", path=bad, content="x")[0], bad)
+        self.c.ok("write", path=".env.example", content="A=1")
 
 
 class TestBackup(Base):

@@ -25,7 +25,9 @@ Usage: $(basename "$0") [options] [-- extra llama-server args]
   -p, --port N        port (default: $port)
       --host ADDR     bind address (default: 127.0.0.1)
                       Any other address requires OCL_LLAMA_API_KEY to be set.
-  -b, --background    run detached; PID file in $OCL_STATE
+  -b, --background    run detached; PID file in $OCL_STATE. Stops itself after
+                      OCL_LLAMA_IDLE_MIN minutes (default 10) without an open
+                      opencode-local session or request; 0 keeps it running.
       --stop          stop a background server
   -n, --dry-run       print the command only
 
@@ -104,6 +106,9 @@ if [[ "$background" == 1 ]]; then
   nohup "${cmd[@]}" >> "$logfile" 2>&1 &
   echo $! > "$pidfile"
   log "started in background (pid $(cat "$pidfile"))"
+  if [[ "${OCL_LLAMA_IDLE_MIN:-10}" != 0 ]]; then
+    nohup "$(dirname "$0")/idle-stop.sh" "$(cat "$pidfile")" >/dev/null 2>&1 &
+  fi
 else
   "${cmd[@]}" 2>&1 | tee -a "$logfile"
 fi

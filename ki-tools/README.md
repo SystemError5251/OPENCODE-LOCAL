@@ -5,7 +5,7 @@ over stdio in the project directory; none of them opens a network port.
 
 | Server | Tools | Needs |
 |---|---|---|
-| `ocl_files` | `info`, `largest`, `trash`, `list_trash`, `restore`, `move` | – |
+| `ocl_files` | `info`, `largest`, `trash`, `list_trash`, `restore`, `move`, `write`, `replace` | – |
 | `ocl_backup` | `create`, `list`, `diff`, `restore` | – |
 | `ocl_crypto` | `status`, `encrypt`, `decrypt` | `gpg` |
 | `ocl_video` | `info`, `convert`, `trim` | `ffmpeg`, `ffprobe` |
@@ -18,6 +18,9 @@ In OpenCode the tools appear as `<server>_<tool>`, e.g. `ocl_backup_create`.
   outside are rejected.
 - Nothing is overwritten and nothing is deleted:
   - `trash` moves files to `.trash/` in the project, and `restore` puts them back.
+  - `write` and `replace` (the edit tools of the `lite` agent) first copy the old version to `.trash/`.
+    They refuse secrets files (`.env`, keys) and remove line numbers or a literal `\n` that a small model
+    copied in by mistake.
   - Backup restores go into a new `restored-<id>/` folder.
   - Encrypt and decrypt write new files and keep the original.
   - Video outputs must not already exist (`ffmpeg -n`).
