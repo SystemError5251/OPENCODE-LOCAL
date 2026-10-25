@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.0 – 2026-10-25
+
+### Added
+- `lite` agent, now the default: only bash, read, grep and two forgiving edit tools, so each step sends about
+  2,900 tokens instead of 7,000 (first answer on the test machine 49 s instead of 107 s). Tab switches to
+  `coder` with all tools; `opencode-local --agent coder` starts with it.
+- MCP tools `ocl_files_write` and `ocl_files_replace`: keep the old version in `.trash/`, refuse secrets
+  files, and undo typical small-model mistakes (copied line numbers, `\n` as text). With them Qwen3 1.7B
+  finished 6 of 6 simple edits, against 1 of 6 with OpenCode's own edit tool.
+- Idle stop: a background llama-server stops itself 10 minutes after the last `opencode-local` session ends
+  and no request is running (`OCL_LLAMA_IDLE_MIN`, `0` = never). `scripts/idle-stop.sh` does the watching.
+
+### Fixed
+- Termux: the wake lock is released when OpenCode exits (it used to stay on until Termux was closed).
+
 ## 1.1.0 – 2026-10-25
 
 ### Added

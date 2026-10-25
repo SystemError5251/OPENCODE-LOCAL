@@ -14,6 +14,12 @@ if [[ "$PWD" == "$HOME" || "$PWD" == / ]]; then
   exit 1
 fi
 
+# While this file exists, idle-stop.sh keeps the model server running.
+OCL_STATE="${OCL_STATE:-$HOME/.local/state/opencode-local}"
+marker="$OCL_STATE/sessions/$$"
+mkdir -p "$OCL_STATE/sessions" && : > "$marker"
+trap 'rm -f "$marker"' EXIT
+
 repo_file="$OCL_HOME/repo-path"
 if [[ -f "$repo_file" && -x "$(cat "$repo_file")/scripts/ensure-llama.sh" ]]; then
   "$(cat "$repo_file")/scripts/ensure-llama.sh" || exit 1
@@ -39,7 +45,7 @@ done
 
 run_dir="$(mktemp -d "$base/run.XXXXXX")"
 echo $$ > "$run_dir/pid"
-cleanup() { rm -rf "$run_dir"; }
+cleanup() { rm -rf "$run_dir" "$marker"; }
 trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM HUP

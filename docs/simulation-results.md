@@ -95,6 +95,24 @@ Same prompt with each real model, network cut: "What does hello.py do? Read it f
 Consequences in this change: default context 16384 with `--parallel 1`, Qwen3 1.7B as the
 default phone model, Qwen2.5-Coder 1.5B/3B moved to tier `legacy`.
 
+## Lite agent (1.2.0)
+
+Measured with llama-server `/tokenize` (Qwen3 1.7B tokenizer) on the request OpenCode really sends:
+
+| | system prompt | tools | total | first step "read hello.py", Qwen3 1.7B Q8_0, 4 x86 cores |
+|---|---|---|---|---|
+| `coder` | 829 | 6,200 (25 tools; bash 1,316, task 882, todowrite 658, read 476, edit 461) | ~7,030 | 107 s |
+| `lite` | 592 | 2,310 (bash, read, grep, ocl_files_write, ocl_files_replace) | ~2,900 | 49 s |
+
+Edit "add a function add(a, b) to hello.py" with Qwen3 1.7B, `lite`: with OpenCode's own edit tool 1 of 6
+runs worked (the model copies the `1: ` line numbers of the read output into `oldString`, or writes `\n`
+as text). With the forgiving `ocl_files_write` / `ocl_files_replace` 6 of 6 worked, about 50 s each.
+"Make div raise ValueError when b is 0" in a 25-line file: `lite` 2 of 3 right (55 s each, the third
+returned the error instead of raising it); `coder` overwrote the whole file with broken content (178 s).
+
+Idle stop: with `OCL_LLAMA_IDLE_MIN=1` the server stayed up while a session marker existed and stopped
+about one minute after the session ended; the PID file was removed.
+
 ## Not covered here
 
 - The phone itself: Termux, proot-distro, speed, heat, RAM. Memory on this x86 machine is not

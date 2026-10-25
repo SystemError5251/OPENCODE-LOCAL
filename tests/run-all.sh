@@ -44,6 +44,14 @@ for k in perm[perm.index("ocl_*") + 1:]:
     assert c["permission"][k] == "allow" and k.startswith("ocl_"), k
 PY
 
+# The lite agent must not get OpenCode's own edit/write tools, only the forgiving MCP ones.
+check "lite agent tools" python3 - <<'PY'
+s = open("ki-config/agents/lite.md").read().split("---")[1]
+for line in ("edit: deny", '"ocl_*": deny', "ocl_files_write: ask", "ocl_files_replace: ask", "task: deny"):
+    assert "\n  " + line + "\n" in s, line
+assert s.index('"ocl_*": deny') < s.index("ocl_files_write: ask")  # last match wins
+PY
+
 # Dry runs in a throwaway HOME.
 tmp_home="$(mktemp -d)"
 check "install-linux.sh --dry-run" env HOME="$tmp_home" ./install-linux.sh --dry-run
@@ -54,6 +62,15 @@ check "quickstart.sh --dry-run" env HOME="$tmp_home" ./quickstart.sh --dry-run -
 check "wipe-sessions.sh --dry-run" env HOME="$tmp_home" scripts/wipe-sessions.sh --dry-run
 check "fetch-model.sh --list" env HOME="$tmp_home" scripts/fetch-model.sh --list
 check "tunnel.sh --dry-run" env HOME="$tmp_home" scripts/tunnel.sh -n user@pc
+check "idle-stop.sh stops an unused server" bash -c "
+  sleep 60 & fake=\$!
+  HOME=$tmp_home OCL_LLAMA_PORT=1 OCL_LLAMA_IDLE_S=2 OCL_IDLE_CHECK_S=1 timeout 20 scripts/idle-stop.sh \$fake
+  ! kill -0 \$fake 2>/dev/null"
+check "idle-stop.sh waits while a session is open" bash -c "
+  sleep 60 & fake=\$!; sleep 60 & session=\$!
+  mkdir -p $tmp_home/.local/state/opencode-local/sessions && : > $tmp_home/.local/state/opencode-local/sessions/\$session
+  HOME=$tmp_home OCL_LLAMA_PORT=1 OCL_LLAMA_IDLE_S=1 OCL_IDLE_CHECK_S=1 timeout 4 scripts/idle-stop.sh \$fake
+  kill -0 \$fake && kill \$fake \$session"
 rm -rf "$tmp_home"
 
 echo

@@ -2,7 +2,7 @@
   "$schema": "https://opencode.ai/config.json",
   "model": "llamacpp/local",
   "small_model": "llamacpp/local",
-  "default_agent": "coder",
+  "default_agent": "lite",
   "enabled_providers": ["llamacpp"],
   "provider": {
     "llamacpp": {

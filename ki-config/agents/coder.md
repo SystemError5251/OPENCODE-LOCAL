@@ -6,6 +6,8 @@ permission:
   edit: ask
   webfetch: deny
   websearch: deny
+  ocl_files_write: deny
+  ocl_files_replace: deny
 ---
 
 You are a careful coding assistant running on a small local model with no internet access.

@@ -50,9 +50,12 @@ powershell -ExecutionPolicy Bypass -File .\install-windows.ps1 -Mode Native -Fet
 ### Gut zu wissen
 
 - Anderes Modell: `./quickstart.sh --model qwen3-4b` (Liste: `scripts/fetch-model.sh --list`).
-- Die erste Antwort einer Sitzung dauert auf dem Handy Minuten: OpenCode schickt bei jeder Anfrage etwa
-  7.500 Tokens Anweisungen mit. Danach geht es schneller. Einfache Dinge wie einen Ordner anlegen geht in
-  der normalen Shell schneller.
+- OpenCode startet im **lite**-Modus: nur die Grundwerkzeuge (lesen, suchen, Shell, schreiben, ersetzen).
+  So gehen pro Schritt etwa 2.900 statt 7.000 Tokens an das Modell, die erste Antwort dauert auf dem Handy
+  etwa eine Minute statt zwei. Mit **Tab** wechselst du zum vollen **coder**-Agenten (Backups, Papierkorb,
+  Verschlüsselung, Video). Einfache Dinge wie einen Ordner anlegen gehen in der normalen Shell schneller.
+- Der Modell-Server beendet sich 10 Minuten nach der letzten Sitzung von selbst (RAM frei, Handy kann
+  schlafen). Andere Zeit: `OCL_LLAMA_IDLE_MIN=30`, nie beenden: `OCL_LLAMA_IDLE_MIN=0`.
 - Fehlermeldung `No such file or directory`: du bist nicht im Repo-Ordner, also erst `cd ~/opencode-local`.
 - Abgebrochene Installation: einfach `./quickstart.sh` noch einmal starten.
 
@@ -64,7 +67,8 @@ Danach das Netzwerk sperren, auf Android z. B. mit NetGuard oder RethinkDNS für
 | Befehl | Wirkung |
 |---|---|
 | `opencode-local` | startet OpenCode im aktuellen Projektordner (Modell wird bei Bedarf gestartet) |
-| `scripts/start-llama.sh --stop` | Modell-Server beenden (spart Akku) |
+| `scripts/start-llama.sh --stop` | Modell-Server sofort beenden (passiert sonst nach 10 Minuten von selbst) |
+| `opencode-local --agent coder` | gleich mit dem vollen Agenten starten (oder Tab in OpenCode) |
 | `scripts/fetch-model.sh --list` | verfügbare Modelle anzeigen |
 | `scripts/tunnel.sh user@pc` | größeres Modell auf dem PC im Heimnetz nutzen (SSH-Tunnel) |
 | `scripts/tunnel.sh --stop` | zurück zum Modell auf dem Handy |

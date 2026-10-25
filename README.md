@@ -83,12 +83,18 @@ the MCP tools, and gpg / ffmpeg for the crypto / video tools.
 | Build OpenCode from source | `./quickstart.sh --from-source` (slow, needs a lot more RAM and network) |
 | See every step first | `./quickstart.sh --dry-run` |
 | Speed test | `scripts/bench.sh` |
-| Stop the model | `scripts/start-llama.sh --stop` (Termux: then `termux-wake-unlock`) |
+| Stop the model now | `scripts/start-llama.sh --stop` (it also stops by itself, see below) |
+| Full agent instead of lite | press Tab in OpenCode, or `opencode-local --agent coder` |
 
-`opencode-local` starts the model in the background if needed and waits until it is loaded. On a phone
-the first answer of a session takes minutes: OpenCode sends about 7,500 tokens of instructions with every
-request, and a phone CPU reads them slowly. Later answers in the same session are faster. For simple things
-like creating a folder, the normal shell is quicker.
+`opencode-local` starts the model in the background if needed and waits until it is loaded. Ten minutes
+after the last session ends (and nothing is being answered) the model server stops by itself to give the
+RAM back and let the phone sleep; the next `opencode-local` starts it again. Change the time with
+`OCL_LLAMA_IDLE_MIN=30`, or keep it running with `OCL_LLAMA_IDLE_MIN=0`.
+
+OpenCode starts in **lite** mode: only the core tools (read, search, shell, write, replace), so each step
+sends about 2,900 tokens instead of 7,000. On a phone that reads about 65 tokens/s, the first answer still
+takes about a minute. Press **Tab** for the full **coder** agent with backups, trash, encryption and video
+tools. For simple things like creating a folder, the normal shell is quicker.
 
 When the install and download are done, block the network – see [docs/security.md](docs/security.md#network-lock-down).
 
@@ -132,10 +138,10 @@ Manual equivalents: `./install-termux.sh --update` (Termux), `./install-linux.sh
 
 | Path | Content |
 |---|---|
-| `ki-config/` | hardened `opencode.json`, global `AGENTS.md`, agent prompts (`coder`, `review`), `env.sh` |
+| `ki-config/` | hardened `opencode.json`, global `AGENTS.md`, agent prompts (`lite`, `coder`, `review`), `env.sh` |
 | `ki-models/` | curated model list with checksums, [how to choose](ki-models/README.md) |
 | `ki-tools/` | local MCP servers: files (trash/restore), backup, crypto (gpg), video (ffmpeg) – [details](ki-tools/README.md) |
-| `scripts/` | `phase0-check`, `fetch-model`, `start-llama`, `ensure-llama`, `bench`, `tunnel`, `update`, `wipe-sessions`, `opencode-local` launcher |
+| `scripts/` | `phase0-check`, `fetch-model`, `start-llama`, `ensure-llama`, `bench`, `tunnel`, `update`, `wipe-sessions`, `idle-stop`, `opencode-local` launcher |
 | `quickstart.sh` | one-command install + model download for Termux and Linux |
 | `install-*.sh`, `install-windows.ps1` | installers per platform |
 | `lib/common.sh` | version pins and shared helpers |

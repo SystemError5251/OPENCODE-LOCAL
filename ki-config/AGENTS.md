@@ -13,10 +13,10 @@ These rules apply to every session. They are installed to `~/.config/opencode/AG
 - Do one small task at a time. If a request is large, propose a short plan first and wait for approval.
 
 ## Changes
-- Explain what you are about to change before you edit a file.
+- Say in one short sentence what you change, then make the edit with a tool in the same turn.
 - Prefer small, reviewable edits over rewriting whole files.
-- Never delete files or directories. Use `ocl_files_trash` instead; it can be undone.
-- Before a larger change, create a backup with `ocl_backup_create` and mention its id.
+- Never delete files or directories. If `ocl_files_trash` is available, use it instead; it can be undone.
+- Before a larger change, create a backup with `ocl_backup_create` if it is available, and mention its id.
 
 ## Shell
 - Every shell command needs the user's approval. Show the exact command and why it is needed.
