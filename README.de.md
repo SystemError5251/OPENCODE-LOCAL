@@ -14,8 +14,8 @@ pkg install git
 git clone https://github.com/systemerror5251/opencode-local.git && cd opencode-local
 scripts/phase0-check.sh            # Gerätedaten prüfen
 ./install-termux.sh --dry-run      # zeigt nur, was passieren würde
-./install-termux.sh
-scripts/fetch-model.sh qwen2.5-coder-1.5b
+./install-termux.sh --prebuilt-opencode   # offizielle OpenCode-Version (Prüfsumme fest); ohne die Option wird OpenCode aus dem Quellcode gebaut
+scripts/fetch-model.sh qwen3-1.7b
 scripts/bench.sh                   # Geschwindigkeit messen (Tokens/s)
 mkdir -p ~/projects/meinprojekt && cd ~/projects/meinprojekt && opencode-local
 ```
@@ -23,7 +23,7 @@ mkdir -p ~/projects/meinprojekt && cd ~/projects/meinprojekt && opencode-local
 ### Linux
 ```bash
 ./install-linux.sh
-scripts/fetch-model.sh qwen2.5-coder-1.5b
+scripts/fetch-model.sh qwen3-1.7b
 cd ~/projects/meinprojekt && opencode-local
 ```
 

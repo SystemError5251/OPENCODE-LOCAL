@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+Fixes from a simulation run of the test checklist (`docs/simulation-results.md`).
+
+### Added
+- `--prebuilt-opencode` for `install-linux.sh` and `install-termux.sh`: official OpenCode release binary,
+  sha256-pinned, instead of the source build (no Bun, no ~2500 npm packages).
+- Models `qwen3-1.7b` (new phone default) and `qwen3-4b`; every model hash in `models.json` is pinned.
+
+### Changed
+- Context 8192 → 16384 and `--parallel 1`: OpenCode's prompt plus tools already need ~7,500 tokens,
+  with 8192 it compacted on every step and never finished.
+- Qwen2.5-Coder 1.5B/3B moved to tier `legacy`: they write tool calls as text instead of calling them.
+
+### Fixed
+- llama.cpp build: `-DLLAMA_OPENSSL=OFF` replaces the deprecated, no-op `-DLLAMA_CURL=OFF`, so the server
+  really cannot download models; `-DLLAMA_USE_PREBUILT_UI=OFF` stops the build fetching the web UI.
+- Bash rules: `curl`/`wget` and `.env` are denied anywhere in a command line (e.g. inside `bash -c "…"`),
+  not only at the start. Both got through after a click on "allow" before.
+- `tunnel.sh --dry-run` works without ssh installed.
+
 ## 1.0.0 – 2026-10-24
 
 First complete version of the project plan (Phases 0–7).

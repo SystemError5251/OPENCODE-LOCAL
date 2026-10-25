@@ -33,8 +33,8 @@ pkg install git
 git clone https://github.com/systemerror5251/opencode-local.git && cd opencode-local
 scripts/phase0-check.sh            # device data + Phase 0 checklist
 ./install-termux.sh --dry-run      # see what will happen
-./install-termux.sh
-scripts/fetch-model.sh qwen2.5-coder-1.5b
+./install-termux.sh --prebuilt-opencode   # official OpenCode release (sha256-pinned); drop the flag to build from source
+scripts/fetch-model.sh qwen3-1.7b
 scripts/bench.sh                   # tokens/s
 mkdir -p ~/projects/myproject && cd ~/projects/myproject && opencode-local
 ```
@@ -47,7 +47,7 @@ git clone https://github.com/systemerror5251/opencode-local.git && cd opencode-l
 scripts/phase0-check.sh
 ./install-linux.sh --dry-run
 ./install-linux.sh
-scripts/fetch-model.sh qwen2.5-coder-1.5b
+scripts/fetch-model.sh qwen3-1.7b
 mkdir -p ~/projects/myproject && cd ~/projects/myproject && opencode-local
 ```
 
@@ -58,10 +58,10 @@ powershell -ExecutionPolicy Bypass -File .\install-windows.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File .\install-windows.ps1                # WSL2 (recommended)
 # or native:
 powershell -ExecutionPolicy Bypass -File .\install-windows.ps1 -Mode Native
-powershell -ExecutionPolicy Bypass -File .\install-windows.ps1 -Mode Native -FetchModel qwen2.5-coder-1.5b
+powershell -ExecutionPolicy Bypass -File .\install-windows.ps1 -Mode Native -FetchModel qwen3-1.7b
 ```
 Then, in a new terminal, `cd` into a project and run `opencode-local`. WSL mode downloads models inside
-WSL: `wsl -- bash /mnt/c/.../opencode-local/scripts/fetch-model.sh qwen2.5-coder-1.5b`.
+WSL: `wsl -- bash /mnt/c/.../opencode-local/scripts/fetch-model.sh qwen3-1.7b`.
 Native mode needs Python 3 for the MCP tools, and gpg / ffmpeg for the crypto / video tools.
 
 Afterwards cut the network – see [docs/security.md](docs/security.md#network-lock-down).

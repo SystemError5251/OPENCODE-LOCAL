@@ -6,9 +6,10 @@
 | Tier | RAM | Use |
 |---|---|---|
 | `test` | any | smoke test only |
-| `phone-8gb` | 6–8 GB | 1.5B default, 3B as upper limit |
-| `phone-12gb` | 12+ GB | 7B, slow |
+| `phone-8gb` | 6–8 GB | Qwen3 1.7B default |
+| `phone-12gb` | 12+ GB | Qwen3 4B, 7B (slow) |
 | `pc` | 32 GB / GPU | 14B |
+| `legacy` | – | Qwen2.5-Coder 1.5B/3B: no working tool calls in OpenCode, kept for comparison |
 
 `scripts/phase0-check.sh` suggests a tier for the current device.
 
@@ -16,7 +17,7 @@
 
 ```bash
 scripts/fetch-model.sh --list
-scripts/fetch-model.sh qwen2.5-coder-1.5b
+scripts/fetch-model.sh qwen3-1.7b
 ```
 
 - Downloads only over HTTPS from `huggingface.co`, into a `.part` file.
@@ -34,12 +35,25 @@ download fully reproducible.
 
 ## Context size
 
-The context (`--ctx` in `scripts/start-llama.sh`) costs RAM on top of the model. On an 8 GB phone keep it
-at 4096–8192. If you change it, also change `limit.context` in `ki-config/opencode.json` so OpenCode
-compacts the conversation in time.
+OpenCode's system prompt plus the tool descriptions already take about 7,500 tokens before your first
+message (measured 2026-10-25). With the old 8192 context OpenCode compacted the conversation on every step
+and never finished, so the default is now 16384 (`scripts/start-llama.sh`, `limit.context` in
+`ki-config/opencode.json`). Change both together.
+
+The context costs RAM on top of the model. For Qwen3 1.7B, 16384 tokens need about 1.8 GB (f16 KV cache),
+so model plus context is roughly 3.6 GB. If an 8 GB phone runs out of memory, halve the KV cache with
+`scripts/start-llama.sh -- --cache-type-k q8_0 --cache-type-v q8_0` (about 0.9 GB; not yet tested for
+quality).
 
 ## Tool calling
 
 OpenCode works through tool calls (read file, edit, run command). `start-llama.sh` passes `--jinja` so the
-model's chat template handles them. Small models (≤3B) often get tool calls wrong; this is the main
-reason for the PC-host option in Phase 7.
+model's chat template handles them. Results from the 2026-10-25 test (`docs/simulation-results.md`):
+
+| Model | Reads a file via tool | Edits a file |
+|---|---|---|
+| Qwen2.5-Coder 1.5B | no: writes the tool call as text | no |
+| Qwen3 1.7B | yes | no: wrong `oldString`, gives up |
+| Qwen3 4B | yes | not finished within 25 min on 4 x86 cores |
+
+Small models are fine for questions about code; for real edits plan on the PC host (Phase 7).

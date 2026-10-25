@@ -11,7 +11,7 @@ cd ~/opencode-local && git pull && ./install-termux.sh --update
 
 ## 2. Model and speed (Phase 1)
 ```bash
-scripts/fetch-model.sh qwen2.5-coder-1.5b
+scripts/fetch-model.sh qwen3-1.7b
 scripts/bench.sh
 ```
 - [ ] download ends with "checksum ok"; note the printed sha256 (to pin it in `ki-models/models.json`)

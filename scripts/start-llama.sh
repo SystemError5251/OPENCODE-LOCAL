@@ -6,7 +6,7 @@ source "$(dirname "$0")/../lib/common.sh"
 
 host="${OCL_LLAMA_HOST:-127.0.0.1}"
 port="${OCL_LLAMA_PORT:-8080}"
-ctx="${OCL_LLAMA_CTX:-8192}"
+ctx="${OCL_LLAMA_CTX:-16384}"
 threads="${OCL_LLAMA_THREADS:-$(nproc 2>/dev/null || echo 4)}"
 model="${OCL_LLAMA_MODEL:-}"
 api_key="${OCL_LLAMA_API_KEY:-}"
@@ -80,7 +80,7 @@ if [[ "$host" != "127.0.0.1" && "$host" != "localhost" && "$host" != "::1" ]]; t
 fi
 
 cmd=("${server:-llama-server}" --model "$model" --host "$host" --port "$port"
-  --ctx-size "$ctx" --threads "$threads" --jinja --alias local --no-webui)
+  --ctx-size "$ctx" --threads "$threads" --jinja --alias local --no-webui --parallel 1)
 [[ -n "$api_key" && "$api_key" != "local-no-key" ]] && cmd+=(--api-key "$api_key")
 cmd+=("${extra[@]}")
 

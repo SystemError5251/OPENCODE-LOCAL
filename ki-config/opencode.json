@@ -17,7 +17,7 @@
           "name": "Local GGUF model (llama-server)",
           "tool_call": true,
           "limit": {
-            "context": 8192,
+            "context": 16384,
             "output": 2048
           }
         }
@@ -75,7 +75,14 @@
       "npm install*": "deny",
       "npx *": "deny",
       "bunx *": "deny",
-      "eval *": "deny"
+      "eval *": "deny",
+      "*curl *": "deny",
+      "*wget *": "deny",
+      "* .env": "deny",
+      "* .env *": "deny",
+      "*/.env": "deny",
+      "*/.env *": "deny",
+      "*/dev/tcp/*": "deny"
     },
     "webfetch": "deny",
     "websearch": "deny",

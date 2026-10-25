@@ -1,6 +1,7 @@
 # Phase 0/1 results
 
-Fill in one column per device. Get the values from `scripts/phase0-check.sh` and `scripts/bench.sh`.
+Fill in one column per device. A simulation run in a cloud container (x86, not a phone) is in
+`docs/simulation-results.md`. Get the values from `scripts/phase0-check.sh` and `scripts/bench.sh`.
 
 ## Devices
 
@@ -32,6 +33,8 @@ Fill in one column per device. Get the values from `scripts/phase0-check.sh` and
 | qwen2.5-coder-0.5b | | | | |
 | qwen2.5-coder-1.5b | | | | |
 | qwen2.5-coder-3b | | | | |
+| qwen3-1.7b | | | | |
+| qwen3-4b | | | | |
 
 ## Decision
 

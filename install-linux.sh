@@ -16,11 +16,14 @@ Needs internet once; afterwards everything runs offline.
       --skip-deps    do not install system packages
       --no-llama     skip llama.cpp (used by install-termux.sh, which builds it natively)
       --no-opencode  skip Bun and OpenCode
+      --prebuilt-opencode
+                     install the official OpenCode release binary (sha256-pinned)
+                     instead of building it from source
       --config-only  only (re)install ki-config/ and ki-tools/ (use after git pull)
 EOF
 }
 
-skip_deps=0 no_llama=0 no_opencode=0 config_only=0
+skip_deps=0 no_llama=0 no_opencode=0 config_only=0 prebuilt=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -n|--dry-run) DRY_RUN=1; shift ;;
@@ -28,6 +31,7 @@ while [[ $# -gt 0 ]]; do
     --no-llama) no_llama=1; shift ;;
     --no-opencode) no_opencode=1; shift ;;
     --config-only) config_only=1; shift ;;
+    --prebuilt-opencode) prebuilt=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
@@ -57,7 +61,11 @@ log "OPENCODE-LOCAL installer (linux)$([[ "$DRY_RUN" == 1 ]] && echo ' [dry run]
 if [[ "$config_only" == 0 ]]; then
   [[ "$skip_deps" == 1 ]] || install_deps
   [[ "$no_llama" == 1 ]] || build_llama_cpp "$OCL_BIN"
-  if [[ "$no_opencode" == 0 ]]; then
+  if [[ "$no_opencode" == 1 ]]; then
+    :
+  elif [[ "$prebuilt" == 1 ]]; then
+    install_opencode_prebuilt
+  else
     install_bun
     build_opencode
   fi
@@ -80,7 +88,7 @@ cat >&2 <<EOF
 
 Done. Next steps:
   1. scripts/fetch-model.sh --list
-  2. scripts/fetch-model.sh qwen2.5-coder-1.5b
+  2. scripts/fetch-model.sh qwen3-1.7b
   3. cd into a project and run: opencode-local   (starts the model if needed)
 After step 2 you can cut the network (see docs/security.md).
 EOF
