@@ -57,7 +57,7 @@ esac
 
 [[ "$target" == *@* ]] || { usage; exit 2; }
 [[ "$target" != -* ]] || die "invalid target"
-have ssh || die "ssh not found (Termux: pkg install openssh)"
+have ssh || [[ "$DRY_RUN" == 1 ]] || die "ssh not found (Termux: pkg install openssh)"
 running && die "a tunnel is already running (pid $(cat "$pidfile")); use --stop first"
 
 cmd=(ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3
