@@ -140,10 +140,15 @@ function Write-Launcher([string] $body) {
 
 # --- WSL2 -------------------------------------------------------------------------------
 function Install-Wsl {
-  if (-not (Get-Command wsl.exe -ErrorAction SilentlyContinue)) {
+  $distros = @()
+  if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
+    $distros = @((& wsl.exe -l -q) -replace "`0", '' | Where-Object { $_.Trim() })
+  } elseif ($DryRun) {
+    # A dry run still lists every step, so the user can see the whole plan before installing WSL.
+    Log 'warning: WSL is not available - a real install stops here: run "wsl --install" as administrator, reboot, rerun.'
+  } else {
     Fail 'WSL is not available. Run "wsl --install" as administrator, reboot, then rerun this script.'
   }
-  $distros = (& wsl.exe -l -q) -replace "`0", '' | Where-Object { $_.Trim() }
   if ($distros -notcontains $Distro) {
     Step "wsl --install -d $Distro" { & wsl.exe --install -d $Distro }
     Log "Finish the $Distro setup (create a user) in the window that opened, then rerun this script."
@@ -151,7 +156,7 @@ function Install-Wsl {
   }
   $wslRepo = if ($DryRun) { '/mnt/c/path/to/opencode-local' } else { (& wsl.exe -d $Distro -- wslpath -a ($RepoRoot -replace '\\', '/')).Trim() }
   $instArgs = if ($ConfigOnly) { '--config-only' } else { '' }
-  if ($DryRun) { $instArgs = "$instArgs --dry-run" }
+  if ($DryRun) { $instArgs = "$instArgs --dry-run".Trim() }
   Step "run install-linux.sh $instArgs inside $Distro" {
     & wsl.exe -d $Distro -- bash "$wslRepo/install-linux.sh" $instArgs.Trim().Split(' ', [StringSplitOptions]::RemoveEmptyEntries)
     if ($LASTEXITCODE -ne 0) { Fail 'install-linux.sh failed inside WSL' }

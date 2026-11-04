@@ -3,6 +3,10 @@
   "model": "llamacpp/local",
   "small_model": "llamacpp/local",
   "default_agent": "lite",
+  "agent": {
+    "build": { "disable": true },
+    "plan": { "disable": true }
+  },
   "enabled_providers": ["llamacpp"],
   "provider": {
     "llamacpp": {

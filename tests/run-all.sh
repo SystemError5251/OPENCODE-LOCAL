@@ -52,6 +52,11 @@ for line in ("edit: deny", '"ocl_*": deny', "ocl_files_write: ask", "ocl_files_r
 assert s.index('"ocl_*": deny') < s.index("ocl_files_write: ask")  # last match wins
 PY
 
+# Tab must switch Lite <-> Coder directly: OpenCode's own build/plan agents stay hidden.
+check "built-in agents disabled" python3 -c '
+import json; a = json.load(open("ki-config/opencode.json"))["agent"]
+assert a["build"]["disable"] is True and a["plan"]["disable"] is True, a'
+
 # Dry runs in a throwaway HOME.
 tmp_home="$(mktemp -d)"
 check "install-linux.sh --dry-run" env HOME="$tmp_home" ./install-linux.sh --dry-run

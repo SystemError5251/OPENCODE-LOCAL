@@ -21,7 +21,7 @@ scripts/bench.sh
 ```bash
 mkdir -p ~/projects/test && cd ~/projects/test && echo 'print("hi")' > hello.py && opencode-local
 ```
-- [ ] OpenCode starts, bottom line shows `coder · local`
+- [ ] OpenCode starts, bottom line shows `Lite · Local GGUF model`; Tab switches between `Lite` and `Coder` only
 - [ ] "What does hello.py do?" → it reads the file (no approval needed for reading)
 - [ ] "Add a function add(a, b) to hello.py" → **asks** before editing
 - [ ] "Run python3 hello.py" → **asks** before running
@@ -35,6 +35,8 @@ In the same session:
 - [ ] With the firewall app blocking Termux: OpenCode still works
 
 ## 5. MCP tools (Phase 4)
+These tools are only in `coder`: press Tab once (or start with `opencode-local --agent coder`).
+Small models sometimes pick the wrong tool (e.g. `move` instead of `trash`): reject it and name the tool.
 - [ ] "Make a backup of the project" → `ocl_backup_create` runs, prints a backup id
 - [ ] "Move hello.py to the trash" → **asks**, afterwards `.trash/` exists; "restore it" → file is back
 - [ ] "Encrypt hello.py" → **asks**, creates `hello.py.gpg`, mentions the key file
