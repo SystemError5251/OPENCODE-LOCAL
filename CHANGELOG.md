@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Tab now switches straight from `lite` to `coder`: OpenCode's own `build` and `plan` agents are disabled.
+  They were in the Tab cycle before `coder` and used OpenCode's long default prompt.
+- `install-windows.ps1 -DryRun` lists all WSL steps even when WSL is not installed yet (a real install
+  still stops with the hint to run `wsl --install`).
+- `docs/test-checklist.md` matches 1.2.0: the bottom line shows `Lite`, and the MCP tools need `coder`.
+- `docs/test-run-2026-11-04.md`: results of a real checklist run of 1.2.0 on Linux.
+
 ## 1.2.0 – 2026-10-25
 
 ### Added
